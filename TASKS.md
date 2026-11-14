@@ -23,19 +23,19 @@ Check an item only when implemented and supported by evidence. Record evidence a
 - [x] User and student/security profiles
 - [x] Categories and campus locations
 - [ ] Separate lost reports and found reports
-- [ ] Image/evidence storage abstraction with access controls
+- [x] Image/evidence storage abstraction with access controls
 - [ ] Audit trail and status history
 
 ### Lost/found workflows
 - [ ] Student creates and manages own lost report
 - [ ] Lost report visible only to Security Officers and its owner as appropriate (owner access details to confirm)
-- [ ] Student creates found report before handover; no officer-created-for-student report in MVP
-- [ ] 24-hour handover reminders without a fixed handover deadline
-- [ ] Officer confirms physical receipt and verification
-- [ ] Only verified received found items become student-visible
+- [x] Student creates found report before handover; no officer-created-for-student report in MVP
+- [x] 24-hour handover reminders without a fixed handover deadline
+- [x] Officer confirms physical receipt and verification
+- [x] Only verified received found items become student-visible
 
 ### Claims and return
-- [ ] Students browse available found items
+- [x] Students browse available found items
 - [ ] Claim requires Student ID, Index Number, and ownership proof
 - [ ] Multiple claims supported; officer decides rightful owner
 - [ ] Rejected claim may be resubmitted with new evidence
