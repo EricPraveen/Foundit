@@ -61,3 +61,15 @@ springdoc:
     path: /swagger-ui.html
     enabled: ${SWAGGER_UI_ENABLED:true}
     operationsSorter: method
+
+# Security & Authentication
+jwt:
+  secret: ${JWT_SECRET:defaultSecureFounditUniversityJwtSecretKey2026MoratuwaCampusFindAuth}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+auth:
+  verification-token-expiry-hours: ${AUTH_VERIFICATION_TOKEN_EXPIRY_HOURS:24}
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+

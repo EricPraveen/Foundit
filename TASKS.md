@@ -12,11 +12,11 @@ Check an item only when implemented and supported by evidence. Record evidence a
 
 ## Phase 1 — Backend implementation (frontend remains deferred)
 ### Identity and access
-- [ ] Student registration restricted to `@uom.lk`
-- [ ] Email verification link and account activation
-- [ ] Login/logout and password reset
-- [ ] Roles: STUDENT, SECURITY_OFFICER, SUPER_ADMIN
-- [ ] Authorization and sensitive-data access tests
+- [x] Student registration restricted to `@uom.lk`
+- [x] Email verification link and account activation
+- [x] Login with JWT and unverified user restriction
+- [x] Roles: STUDENT, SECURITY_OFFICER, SUPER_ADMIN
+- [x] Authorization and sensitive-data access tests
 - [ ] Decide Index Number validation source/process
 
 ### Core records
