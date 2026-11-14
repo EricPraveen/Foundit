@@ -3,11 +3,11 @@
 Check an item only when implemented and supported by evidence. Record evidence and date in `progress/STATUS.md`.
 
 ## Phase 0 — Foundation and decisions
-- [ ] Confirm open decisions needed for first backend slice
-- [ ] Select exact Spring Boot/Maven dependency versions
-- [ ] Create backend application and local development configuration
-- [ ] Establish PostgreSQL and Flyway baseline
-- [ ] Add health endpoint, global error format, and OpenAPI
+- [x] Confirm open decisions needed for first backend slice
+- [x] Select exact Spring Boot/Maven dependency versions (Java 21, Spring Boot 3.3.5)
+- [x] Create backend application and local development configuration (.env.example, application.yml)
+- [x] Establish PostgreSQL and Flyway baseline (V1__init_foundation.sql, ddl-auto=validate)
+- [x] Add health endpoint, global error format, and OpenAPI (/actuator/health, GlobalExceptionHandler, /v3/api-docs)
 - [ ] Agree initial ER model and migration conventions
 
 ## Phase 1 — Backend implementation (frontend remains deferred)

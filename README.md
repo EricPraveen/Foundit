@@ -1,6 +1,14 @@
 # Foundit
 
-Foundit is a university lost-and-found system for students, Security Officers, and Super Admins. This repository is a **starter scaffold and project brief**, not a functioning application yet.
+Foundit is a university lost-and-found system for students, Security Officers, and Super Admins. This repository is a **modular monolith** with the Java 21 / Spring Boot backend foundation initialized under `backend/`. The React frontend remains deferred until the backend completion gate in `docs/ROADMAP.md` is met.
+
+## Quick start (Backend)
+
+```bash
+cd backend
+./mvnw clean test
+```
+See [backend/README.md](file:///Users/ericpraveen/Desktop/Foundit/backend/README.md) for full setup, environment variables, Actuator, and OpenAPI documentation.
 
 ## Development rule
 
