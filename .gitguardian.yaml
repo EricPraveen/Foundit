@@ -1,0 +1,13 @@
+# GitGuardian ggshield configuration for Foundit (CampusFind)
+version: 2
+exit_zero: false
+verbose: false
+instance: https://dashboard.gitguardian.com
+
+secret:
+  show_secrets: false
+  ignored_paths:
+    - '**/target/**'
+    - '**/node_modules/**'
+    - '**/dist/**'
+    - '**/build/**'
