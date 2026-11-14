@@ -1,0 +1,74 @@
+# CampusFind implementation tracker
+
+Check an item only when implemented and supported by evidence. Record evidence and date in `progress/STATUS.md`.
+
+## Phase 0 — Foundation and decisions
+- [ ] Confirm open decisions needed for first backend slice
+- [ ] Select exact Spring Boot/Maven dependency versions
+- [ ] Create backend application and local development configuration
+- [ ] Establish PostgreSQL and Flyway baseline
+- [ ] Add health endpoint, global error format, and OpenAPI
+- [ ] Agree initial ER model and migration conventions
+
+## Phase 1 — Backend implementation (frontend remains deferred)
+### Identity and access
+- [ ] Student registration restricted to `@uom.lk`
+- [ ] Email verification link and account activation
+- [ ] Login/logout and password reset
+- [ ] Roles: STUDENT, SECURITY_OFFICER, SUPER_ADMIN
+- [ ] Authorization and sensitive-data access tests
+- [ ] Decide Index Number validation source/process
+
+### Core records
+- [ ] User and student/security profiles
+- [ ] Categories and campus locations
+- [ ] Separate lost reports and found reports
+- [ ] Image/evidence storage abstraction with access controls
+- [ ] Audit trail and status history
+
+### Lost/found workflows
+- [ ] Student creates and manages own lost report
+- [ ] Lost report visible only to Security Officers and its owner as appropriate (owner access details to confirm)
+- [ ] Student creates found report before handover; no officer-created-for-student report in MVP
+- [ ] 24-hour handover reminders without a fixed handover deadline
+- [ ] Officer confirms physical receipt and verification
+- [ ] Only verified received found items become student-visible
+
+### Claims and return
+- [ ] Students browse available found items
+- [ ] Claim requires Student ID, Index Number, and ownership proof
+- [ ] Multiple claims supported; officer decides rightful owner
+- [ ] Rejected claim may be resubmitted with new evidence
+- [ ] Approval/reservation/physical collection/return lifecycle
+- [ ] Sensitive evidence visible only to Security Officers
+
+### Points, notifications, administration
+- [ ] Category-configurable point rules; award after verified handover
+- [ ] Prevent duplicate awards; maintain point ledger
+- [ ] In-app/mobile-first notifications and email for important events
+- [ ] One central Security Office with multiple officers
+- [ ] Unclaimed reminder, UNCLAIMED status, and Super Admin escalation
+- [ ] Final handling follows university policy; no automatic disposal
+- [ ] Admin management and audit functions
+
+## Phase 2 — Backend completion gate
+- [ ] Unit, integration, API, auth, authorization, validation, and workflow tests
+- [ ] Clean database migration path verified
+- [ ] OpenAPI contract complete and stable
+- [ ] Sensitive data privacy review completed
+- [ ] Core end-to-end backend workflows pass
+- [ ] Update `progress/STATUS.md` with evidence and mark backend gate complete
+
+## Phase 3 — Frontend (start only after Phase 2)
+- [ ] Authentication and role-specific layouts
+- [ ] Student dashboard and lost/found features
+- [ ] Claims and notifications
+- [ ] Security Officer dashboards and review flows
+- [ ] Super Admin management screens
+- [ ] Responsive and accessible UI
+- [ ] PWA/push support if confirmed in scope
+
+## Phase 4 — Integration and release
+- [ ] Frontend-backend integration and end-to-end scenarios
+- [ ] Production configuration, deployment target, monitoring, backups
+- [ ] Release checklist and operational documentation
