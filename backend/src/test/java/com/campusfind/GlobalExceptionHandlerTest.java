@@ -68,7 +68,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void nonExistentRouteReturnsNotFound() throws Exception {
-        mockMvc.perform(get("/api/non-existent-route"))
+        mockMvc.perform(get("/test/non-existent-route"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404));
     }
