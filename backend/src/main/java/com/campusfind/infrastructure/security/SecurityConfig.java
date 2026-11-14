@@ -65,6 +65,16 @@ public class SecurityConfig {
                                 "/api/v1/locations",
                                 "/api/v1/security-office"
                         ).permitAll()
+                        .requestMatchers(
+                                org.springframework.http.HttpMethod.GET,
+                                "/api/v1/found-items/me"
+                        ).authenticated()
+                        .requestMatchers(
+                                org.springframework.http.HttpMethod.GET,
+                                "/api/v1/found-items",
+                                "/api/v1/found-items/{id}"
+                        ).permitAll()
+                        .requestMatchers("/api/v1/officer/**").hasAnyRole("SECURITY_OFFICER", "SUPER_ADMIN")
                         .requestMatchers("/test/**").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()

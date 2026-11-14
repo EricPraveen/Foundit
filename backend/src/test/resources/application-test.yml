@@ -16,3 +16,10 @@ management:
   endpoint:
     health:
       show-details: always
+
+app:
+  storage:
+    provider: local
+    bucket: test-bucket
+    local:
+      upload-dir: target/test-uploads
