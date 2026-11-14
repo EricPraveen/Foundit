@@ -36,6 +36,22 @@ spring:
     baseline-version: 0
     locations: classpath:db/migration
 
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+
+# Storage configuration
+app:
+  storage:
+    provider: ${STORAGE_PROVIDER:local}
+    bucket: ${SUPABASE_STORAGE_BUCKET:found-items}
+    local:
+      upload-dir: ${LOCAL_UPLOAD_DIR:uploads/found-items}
+    supabase:
+      url: ${SUPABASE_URL:https://peozkhpdwvrctmqroqau.supabase.co}
+      service-role-key: ${SUPABASE_SERVICE_ROLE_KEY:}
+
 # Actuator Health & Metrics
 management:
   endpoints:
