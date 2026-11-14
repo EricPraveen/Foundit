@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -36,12 +37,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class FoundItemReportingIntegrationTest {
 
     @Autowired
@@ -110,6 +113,16 @@ class FoundItemReportingIntegrationTest {
 
         testOffice = new SecurityOfficeEntity("Central Security", "Main Admin Bldg", "security@uom.lk", "+94112650301", "24/7");
         securityOfficeRepository.save(testOffice);
+    }
+
+    @AfterEach
+    void tearDown() {
+        foundItemImageRepository.deleteAll();
+        foundItemRepository.deleteAll();
+        userRepository.deleteAll();
+        categoryRepository.deleteAll();
+        locationRepository.deleteAll();
+        securityOfficeRepository.deleteAll();
     }
 
     @Test
