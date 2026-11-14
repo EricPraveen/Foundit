@@ -1,8 +1,8 @@
 # Project status
 
-**Current phase:** Phase 1 — Backend Implementation (Slice 2: Core Records & Profiles / BACKEND-03)
+**Current phase:** Phase 1 — Backend Implementation (Slice 3: Found Reporting & Handover / BACKEND-04)
 
-**Overall:** User profiles, central Security Office configuration, officer provisioning, categories, and campus locations reference-data APIs fully implemented and verified with automated integration tests.
+**Overall:** Found Item reporting, image storage abstraction, Security Officer physical handover confirmation, audit trail, and public discovery APIs fully implemented and verified with automated integration tests.
 
 ## Completed
 - [x] Project context and confirmed decisions captured
@@ -26,11 +26,18 @@
 - [x] Category reference data (`GET /api/v1/categories`, Super Admin CRUD & toggle under `/api/v1/admin/categories`) with soft deactivation
 - [x] Campus locations reference data (`GET /api/v1/locations`, Super Admin CRUD & toggle under `/api/v1/admin/locations`) with soft deactivation
 - [x] Flyway migration `V3__create_profiles_office_categories_locations.sql` created with safe initial seeds
-- [x] Comprehensive automated test suite expanded (40 tests passing)
+- [x] Found Item reporting lifecycle with initial `PENDING_HANDOVER` status (`POST /api/v1/found-items`)
+- [x] Public browse endpoint (`GET /api/v1/found-items`) strictly filtering to verified `AVAILABLE` items with finder privacy masking
+- [x] Security Officer physical handover confirmation (`POST /api/v1/officer/found-items/{id}/confirm-handover`) with office assignment validation and status transition to `AVAILABLE`
+- [x] Immutable handover audit trail logging (`found_item_handover_logs`)
+- [x] Image attachment handling with Supabase Storage / Local storage abstraction and validation
+- [x] Overdue pending handover query (>24h) support (`GET /api/v1/officer/found-items/overdue-handover`)
+- [x] Flyway migration `V4__create_found_items_and_handover_tables.sql` created
+- [x] Comprehensive automated test suite expanded (56 tests passing)
 - [x] Complete CI pipeline with GitHub Actions (Backend Java 21, Frontend deferred check, Code Quality, GitGuardian ggshield, Dependabot)
 
 ## In progress
-- [ ] Phase 1 — Slice 3: Reporting (separate lost and found records, validation, images, ownership rules)
+- [ ] Phase 1 — Slice 4: Private Lost Report Lifecycle (Issue #94: BACKEND-05)
 
 ## Evidence log
 | Date | Change/evidence | Notes |
@@ -40,5 +47,6 @@
 | 2026-11-14 | BACKEND-02 (`backend/backend-02-auth-security`): @uom.lk registration, email verification, JWT login, RBAC, V2 migration | Verified via `cd backend && ./mvnw clean verify` (21 tests executed, 0 failures, 0 errors, build success) |
 | 2026-11-14 | BACKEND-03 (`backend/backend-03-profiles-reference-data`): User profiles, central Security Office, officer provisioning, categories, locations, V3 migration | Verified via `cd backend && ./mvnw clean verify` (40 tests executed, 0 failures, 0 errors, build success in 7.7s) |
 | 2026-11-15 | CI/CD Automation (`feature/ci-cd-pipeline`): GitHub Actions (`ci.yml`, `secret-scanning.yml`), Dependabot, GitGuardian ggshield, PR template, CI docs | Verified via YAML parsing & `cd backend && ./mvnw clean verify` (40 tests passing, build success in 8.1s) |
+| 2026-11-15 | BACKEND-04 (`feature/backend-04-found-reporting`): Found item reporting, officer handover, images, audit trail, V4 migration | Verified via `cd backend && ./mvnw clean verify` (56 tests executed, 0 failures, 0 errors, build success in 10.8s) |
 
 Update this file with concrete commands/results or review evidence whenever a task is marked complete.
