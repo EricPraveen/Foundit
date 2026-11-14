@@ -1,8 +1,8 @@
 # Project status
 
-**Current phase:** Phase 1 — Backend Implementation (Slice 3: Found Reporting & Handover / BACKEND-04)
+**Current phase:** Phase 1 — Backend Implementation (Slice 4: Private Lost Report Lifecycle / BACKEND-05)
 
-**Overall:** Found Item reporting, image storage abstraction, Security Officer physical handover confirmation, audit trail, and public discovery APIs fully implemented and verified with automated integration tests.
+**Overall:** Private Lost Report submission, owner lifecycle management, multi-office scope isolation for Security Officers, immutable audit trail, and zero-public-exposure privacy protections fully implemented and verified with automated integration tests (81 total tests passing).
 
 ## Completed
 - [x] Project context and confirmed decisions captured
@@ -33,11 +33,19 @@
 - [x] Image attachment handling with Supabase Storage / Local storage abstraction and validation
 - [x] Overdue pending handover query (>24h) support (`GET /api/v1/officer/found-items/overdue-handover`)
 - [x] Flyway migration `V4__create_found_items_and_handover_tables.sql` created
-- [x] Comprehensive automated test suite expanded (56 tests passing)
 - [x] Complete CI pipeline with GitHub Actions (Backend Java 21, Frontend deferred check, Code Quality, GitGuardian ggshield, Dependabot)
+- [x] Private Lost Report lifecycle with initial `ACTIVE` status (`POST /api/v1/lost-reports`)
+- [x] Strict student privacy isolation: only report owner can view/update/cancel/resolve; cross-student lookup returns `404 Not Found` (anti-enumeration & anti-IDOR)
+- [x] Security Officer search within designated security office scope (`GET /api/v1/officer/lost-reports`); cross-office access returns `403 Forbidden`
+- [x] Lost report terminal transitions to `RESOLVED` and `CANCELLED` with audit logging and conflict protection
+- [x] Immutable lifecycle audit logging table (`lost_report_audit_logs`) tracking actor role, transition, details, and timestamps
+- [x] Image attachments for lost reports using shared `StorageService` abstraction
+- [x] Complete isolation from public browse APIs (lost reports never exposed in public found item endpoints)
+- [x] Flyway migration `V5__create_lost_reports_and_audit_tables.sql` created
+- [x] Automated test suite expanded to 81 passing tests (25 new integration tests for lost report lifecycle & officer access)
 
 ## In progress
-- [ ] Phase 1 — Slice 4: Private Lost Report Lifecycle (Issue #94: BACKEND-05)
+- [ ] Phase 1 — Slice 5: Claims and Return Lifecycle (Issue #95: BACKEND-06)
 
 ## Evidence log
 | Date | Change/evidence | Notes |
@@ -48,5 +56,6 @@
 | 2026-11-14 | BACKEND-03 (`backend/backend-03-profiles-reference-data`): User profiles, central Security Office, officer provisioning, categories, locations, V3 migration | Verified via `cd backend && ./mvnw clean verify` (40 tests executed, 0 failures, 0 errors, build success in 7.7s) |
 | 2026-11-15 | CI/CD Automation (`feature/ci-cd-pipeline`): GitHub Actions (`ci.yml`, `secret-scanning.yml`), Dependabot, GitGuardian ggshield, PR template, CI docs | Verified via YAML parsing & `cd backend && ./mvnw clean verify` (40 tests passing, build success in 8.1s) |
 | 2026-11-15 | BACKEND-04 (`feature/backend-04-found-reporting`): Found item reporting, officer handover, images, audit trail, V4 migration | Verified via `cd backend && ./mvnw clean verify` (56 tests executed, 0 failures, 0 errors, build success in 10.8s) |
+| 2026-11-15 | BACKEND-05 (`feature/backend-05-private-lost-reports`): Private lost report lifecycle, owner isolation, officer scope, audit logs, V5 migration | Verified via `cd backend && ./mvnw clean verify` (81 tests executed, 0 failures, 0 errors, build success in 17.4s) |
 
 Update this file with concrete commands/results or review evidence whenever a task is marked complete.
