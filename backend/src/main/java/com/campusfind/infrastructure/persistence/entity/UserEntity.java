@@ -41,6 +41,15 @@ public class UserEntity {
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified = false;
 
+    @Column(name = "index_number", length = 50)
+    private String indexNumber;
+
+    @Column(name = "phone_number", length = 30)
+    private String phoneNumber;
+
+    @Column(name = "index_number_verified", nullable = false)
+    private boolean indexNumberVerified = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -130,6 +139,30 @@ public class UserEntity {
 
     public void setEmailVerified(boolean emailVerified) {
         this.emailVerified = emailVerified;
+    }
+
+    public String getIndexNumber() {
+        return indexNumber;
+    }
+
+    public void setIndexNumber(String indexNumber) {
+        this.indexNumber = indexNumber;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public boolean isIndexNumberVerified() {
+        return indexNumberVerified;
+    }
+
+    public void setIndexNumberVerified(boolean indexNumberVerified) {
+        this.indexNumberVerified = indexNumberVerified;
     }
 
     public Instant getCreatedAt() {
