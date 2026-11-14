@@ -1,18 +1,39 @@
 # Secrets and local configuration
 .env
 .env.*
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
 !.env.example
+*.pem
+*.key
+*.keystore
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Java / Maven
 **/target/
 *.class
+.mvn/wrapper/maven-wrapper.jar
 
 # Node
 **/node_modules/
 **/dist/
+**/build/
+coverage/
 
 # IDE / OS
 .idea/
 .vscode/
+**/.DS_Store
 .DS_Store
 *.iml
+
+# GitGuardian / Local tools
+.gitguardian_cache/

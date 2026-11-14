@@ -1,0 +1,132 @@
+name: CampusFind CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  backend-ci:
+    name: Backend Build & Test Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+          cache-dependency-path: backend/pom.xml
+
+      - name: Make Maven wrapper executable
+        run: chmod +x backend/mvnw
+
+      - name: Compile and run backend tests
+        working-directory: backend
+        run: ./mvnw clean verify --batch-mode --no-transfer-progress
+
+      - name: Upload Surefire Test Reports on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-surefire-reports
+          path: backend/target/surefire-reports/
+          retention-days: 7
+
+  frontend-ci:
+    name: Frontend Build & Test Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check frontend initialization status
+        id: check-frontend
+        run: |
+          if [ -f frontend/package.json ]; then
+            echo "initialized=true" >> $GITHUB_OUTPUT
+            echo "Frontend package.json found. Proceeding with frontend CI pipeline."
+          else
+            echo "initialized=false" >> $GITHUB_OUTPUT
+            echo "Frontend is currently deferred per docs/ROADMAP.md (Phase 3). Skipping npm checks."
+          fi
+
+      - name: Set up Node.js 20
+        if: steps.check-frontend.outputs.initialized == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        if: steps.check-frontend.outputs.initialized == 'true'
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run linter
+        if: steps.check-frontend.outputs.initialized == 'true'
+        working-directory: frontend
+        run: npm run lint --if-present
+
+      - name: Run TypeScript type-check
+        if: steps.check-frontend.outputs.initialized == 'true'
+        working-directory: frontend
+        run: npm run typecheck --if-present
+
+      - name: Run frontend unit tests
+        if: steps.check-frontend.outputs.initialized == 'true'
+        working-directory: frontend
+        run: npm test --if-present
+
+      - name: Build frontend production bundle
+        if: steps.check-frontend.outputs.initialized == 'true'
+        working-directory: frontend
+        run: npm run build --if-present
+
+  code-quality:
+    name: Code Quality & Secrets Hygiene
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+          cache-dependency-path: backend/pom.xml
+
+      - name: Verify zero committed .env secret files
+        run: |
+          echo "Inspecting repository for tracked secret files..."
+          COMMITTED_ENV_FILES=$(git ls-files | grep -E '(\.env$|\.env\.(local|production|development|staging|test)$)' || true)
+          if [ -n "$COMMITTED_ENV_FILES" ]; then
+            echo "::error::Sensitive environment file is tracked in git: $COMMITTED_ENV_FILES"
+            exit 1
+          fi
+          echo "No sensitive .env files found in git index."
+
+      - name: Make Maven wrapper executable
+        run: chmod +x backend/mvnw
+
+      - name: Validate Java compiler warnings and build hygiene
+        working-directory: backend
+        run: ./mvnw compile -Dmaven.compiler.showWarnings=true --batch-mode --no-transfer-progress
