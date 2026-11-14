@@ -20,8 +20,8 @@ Check an item only when implemented and supported by evidence. Record evidence a
 - [ ] Decide Index Number validation source/process
 
 ### Core records
-- [ ] User and student/security profiles
-- [ ] Categories and campus locations
+- [x] User and student/security profiles
+- [x] Categories and campus locations
 - [ ] Separate lost reports and found reports
 - [ ] Image/evidence storage abstraction with access controls
 - [ ] Audit trail and status history
@@ -46,7 +46,7 @@ Check an item only when implemented and supported by evidence. Record evidence a
 - [ ] Category-configurable point rules; award after verified handover
 - [ ] Prevent duplicate awards; maintain point ledger
 - [ ] In-app/mobile-first notifications and email for important events
-- [ ] One central Security Office with multiple officers
+- [x] One central Security Office with multiple officers
 - [ ] Unclaimed reminder, UNCLAIMED status, and Super Admin escalation
 - [ ] Final handling follows university policy; no automatic disposal
 - [ ] Admin management and audit functions

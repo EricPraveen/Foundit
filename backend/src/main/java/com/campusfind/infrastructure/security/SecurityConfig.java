@@ -59,6 +59,12 @@ public class SecurityConfig {
                                 "/api/v1/auth/verify-email",
                                 "/api/v1/auth/resend-verification"
                         ).permitAll()
+                        .requestMatchers(
+                                org.springframework.http.HttpMethod.GET,
+                                "/api/v1/categories",
+                                "/api/v1/locations",
+                                "/api/v1/security-office"
+                        ).permitAll()
                         .requestMatchers("/test/**").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
