@@ -36,11 +36,11 @@ Check an item only when implemented and supported by evidence. Record evidence a
 
 ### Claims and return
 - [x] Students browse available found items
-- [ ] Claim requires Student ID, Index Number, and ownership proof
-- [ ] Multiple claims supported; officer decides rightful owner
-- [ ] Rejected claim may be resubmitted with new evidence
-- [ ] Approval/reservation/physical collection/return lifecycle
-- [ ] Sensitive evidence visible only to Security Officers
+- [x] Claim requires Student ID, Index Number, and ownership proof
+- [x] Multiple claims supported; officer decides rightful owner
+- [x] Rejected claim may be resubmitted with new evidence
+- [ ] Approval/reservation/physical collection/return lifecycle (Approval/reservation implemented; collection pending BACKEND-07)
+- [x] Sensitive evidence visible only to Security Officers
 
 ### Points, notifications, administration
 - [ ] Category-configurable point rules; award after verified handover

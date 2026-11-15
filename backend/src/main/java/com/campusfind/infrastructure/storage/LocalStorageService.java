@@ -51,6 +51,19 @@ public class LocalStorageService implements StorageService {
     }
 
     @Override
+    public byte[] download(String bucket, String path) {
+        try {
+            Path targetPath = rootDir.resolve(bucket).resolve(path).normalize();
+            if (!targetPath.startsWith(rootDir) || !Files.exists(targetPath)) {
+                throw new RuntimeException("File not found in local storage: " + path);
+            }
+            return Files.readAllBytes(targetPath);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read local storage file: " + path, e);
+        }
+    }
+
+    @Override
     public String getPublicUrl(String bucket, String path) {
         return "/api/v1/storage/" + bucket + "/" + path;
     }

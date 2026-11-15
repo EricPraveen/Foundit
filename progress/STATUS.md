@@ -1,8 +1,8 @@
 # Project status
 
-**Current phase:** Phase 1 — Backend Implementation (Slice 4: Private Lost Report Lifecycle / BACKEND-05)
+**Current phase:** Phase 1 — Backend Implementation (Slice 5: Claims & Private Evidence Review / BACKEND-06)
 
-**Overall:** Private Lost Report submission, owner lifecycle management, multi-office scope isolation for Security Officers, immutable audit trail, and zero-public-exposure privacy protections fully implemented and verified with automated integration tests (81 total tests passing).
+**Overall:** Student ownership claims, private evidence submission (Student ID & ownership proof), Security Officer review and decisions, multi-office scope boundaries, single active approved claim concurrency protection via pessimistic locking, and rejection/resubmission workflows fully implemented and verified with automated integration tests (97 total tests passing).
 
 ## Completed
 - [x] Project context and confirmed decisions captured
@@ -42,10 +42,18 @@
 - [x] Image attachments for lost reports using shared `StorageService` abstraction
 - [x] Complete isolation from public browse APIs (lost reports never exposed in public found item endpoints)
 - [x] Flyway migration `V5__create_lost_reports_and_audit_tables.sql` created
-- [x] Automated test suite expanded to 81 passing tests (25 new integration tests for lost report lifecycle & officer access)
+- [x] Student claim submission with mandatory Index Number, Student ID card, and ownership proof files (`POST /api/v1/found-items/{itemId}/claims`)
+- [x] Private claim evidence handling and secure authenticated download endpoint (`GET /api/v1/claims/{claimId}/evidence/{evidenceId}`); zero public exposure in item DTOs or public storage
+- [x] Anti-IDOR protections: students can only access their own claims and evidence (404 on cross-student requests)
+- [x] Security Officer claim review and office scope boundaries (`GET /api/v1/officer/claims`, `GET /api/v1/officer/claims/{claimId}`)
+- [x] Concurrency-safe claim approval (`POST /api/v1/officer/claims/{claimId}/approve`) using pessimistic write locking and partial unique database index (`uq_found_item_approved_claim`) reserving item (`CLAIM_PENDING`)
+- [x] Multiple pending claims coexistence: approving one claim preserves remaining pending claims in `PENDING` state for audit and fallback
+- [x] Claim rejection with mandatory reason (`POST /api/v1/officer/claims/{claimId}/reject`) and support for claimant resubmission with updated evidence
+- [x] Flyway migration `V6__create_claims_and_evidence_tables.sql` created
+- [x] Automated test suite expanded to 97 passing tests (16 new integration tests for claims, evidence privacy, officer review, and concurrency)
 
 ## In progress
-- [ ] Phase 1 — Slice 5: Claims and Return Lifecycle (Issue #95: BACKEND-06)
+- [ ] Phase 1 — Slice 6: Physical Collection, Item Return, and Reputation Points (Issue #96: BACKEND-07)
 
 ## Evidence log
 | Date | Change/evidence | Notes |
@@ -57,5 +65,6 @@
 | 2026-11-15 | CI/CD Automation (`feature/ci-cd-pipeline`): GitHub Actions (`ci.yml`, `secret-scanning.yml`), Dependabot, GitGuardian ggshield, PR template, CI docs | Verified via YAML parsing & `cd backend && ./mvnw clean verify` (40 tests passing, build success in 8.1s) |
 | 2026-11-15 | BACKEND-04 (`feature/backend-04-found-reporting`): Found item reporting, officer handover, images, audit trail, V4 migration | Verified via `cd backend && ./mvnw clean verify` (56 tests executed, 0 failures, 0 errors, build success in 10.8s) |
 | 2026-11-15 | BACKEND-05 (`feature/backend-05-private-lost-reports`): Private lost report lifecycle, owner isolation, officer scope, audit logs, V5 migration | Verified via `cd backend && ./mvnw clean verify` (81 tests executed, 0 failures, 0 errors, build success in 17.4s) |
+| 2026-11-15 | BACKEND-06 (`backend/backend-06-claims-review`): Claims, private evidence, officer review, single-approval concurrency, V6 migration | Verified via `cd backend && ./mvnw clean verify` (97 tests executed, 0 failures, 0 errors, build success in 25.1s) |
 
 Update this file with concrete commands/results or review evidence whenever a task is marked complete.

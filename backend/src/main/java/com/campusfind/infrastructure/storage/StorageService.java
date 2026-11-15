@@ -6,5 +6,7 @@ public interface StorageService {
 
     void delete(String bucket, String path);
 
+    byte[] download(String bucket, String path);
+
     String getPublicUrl(String bucket, String path);
 }

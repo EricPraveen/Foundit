@@ -73,6 +73,30 @@ public class SupabaseStorageService implements StorageService {
     }
 
     @Override
+    public byte[] download(String bucket, String path) {
+        String downloadEndpoint = String.format("%s/storage/v1/object/%s/%s", supabaseUrl, bucket, path);
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(downloadEndpoint))
+                    .header("Authorization", "Bearer " + serviceRoleKey)
+                    .header("apikey", serviceRoleKey)
+                    .GET()
+                    .timeout(Duration.ofSeconds(15))
+                    .build();
+
+            HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                return response.body();
+            } else {
+                throw new RuntimeException("Supabase storage download failed with status " + response.statusCode());
+            }
+        } catch (Exception e) {
+            log.error("Exception downloading file from Supabase Storage: {}", path, e);
+            throw new RuntimeException("Storage download exception: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
     public String getPublicUrl(String bucket, String path) {
         return String.format("%s/storage/v1/object/public/%s/%s", supabaseUrl, bucket, path);
     }
