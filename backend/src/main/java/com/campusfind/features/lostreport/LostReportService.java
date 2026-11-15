@@ -531,6 +531,46 @@ public class LostReportService {
         return logs.stream().map(this::mapToAuditLogResponse).toList();
     }
 
+    @Transactional
+    public LostReportEntity resolveFromCollection(UUID lostReportId, UserEntity claimant, UserEntity officer, UUID claimId) {
+        if (lostReportId == null) {
+            return null;
+        }
+
+        if (officer.getRole() != UserRole.SECURITY_OFFICER && officer.getRole() != UserRole.SUPER_ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only security officers or administrators can resolve lost reports via collection");
+        }
+
+        LostReportEntity lostReport = lostReportRepository.findById(lostReportId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Linked lost report not found: " + lostReportId));
+
+        if (!lostReport.getStudent().getId().equals(claimant.getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Linked lost report does not belong to the claiming student");
+        }
+
+        if (lostReport.getStatus() != LostReportStatus.ACTIVE) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Linked lost report is already in terminal state: " + lostReport.getStatus());
+        }
+
+        Instant now = Instant.now();
+        lostReport.setStatus(LostReportStatus.RECOVERED);
+        lostReport.setResolvedAt(now);
+        lostReport.setResolvedBy(officer);
+        LostReportEntity saved = lostReportRepository.save(lostReport);
+
+        recordAuditLog(
+                saved,
+                officer.getId(),
+                officer.getRole().name(),
+                "RECOVERED_VIA_COLLECTION",
+                LostReportStatus.ACTIVE.name(),
+                LostReportStatus.RECOVERED.name(),
+                "Physical collection confirmed at Central Security Office; recovered via claim " + claimId
+        );
+
+        return saved;
+    }
+
     // --- Helpers ---
 
     private void recordAuditLog(

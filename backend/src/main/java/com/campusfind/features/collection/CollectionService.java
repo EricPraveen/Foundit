@@ -1,5 +1,6 @@
 package com.campusfind.features.collection;
 
+import com.campusfind.common.event.CollectionConfirmedEvent;
 import com.campusfind.domain.auth.UserRole;
 import com.campusfind.domain.claim.ClaimStatus;
 import com.campusfind.domain.item.ItemAvailabilityStatus;
@@ -7,20 +8,17 @@ import com.campusfind.domain.lostreport.LostReportStatus;
 import com.campusfind.features.audit.AuditService;
 import com.campusfind.features.collection.dto.CollectionConfirmationResponse;
 import com.campusfind.features.collection.dto.ConfirmCollectionRequest;
-import com.campusfind.features.notification.event.CollectionConfirmedEvent;
+import com.campusfind.features.lostreport.LostReportService;
 import com.campusfind.features.reputation.ReputationService;
 import com.campusfind.infrastructure.persistence.entity.ClaimEntity;
 import com.campusfind.infrastructure.persistence.entity.FoundItemEntity;
 import com.campusfind.infrastructure.persistence.entity.ItemCollectionLogEntity;
-import com.campusfind.infrastructure.persistence.entity.LostReportAuditLogEntity;
 import com.campusfind.infrastructure.persistence.entity.LostReportEntity;
 import com.campusfind.infrastructure.persistence.entity.SecurityOfficerProfileEntity;
 import com.campusfind.infrastructure.persistence.entity.UserEntity;
 import com.campusfind.infrastructure.persistence.repository.ClaimRepository;
 import com.campusfind.infrastructure.persistence.repository.FoundItemRepository;
 import com.campusfind.infrastructure.persistence.repository.ItemCollectionLogRepository;
-import com.campusfind.infrastructure.persistence.repository.LostReportAuditLogRepository;
-import com.campusfind.infrastructure.persistence.repository.LostReportRepository;
 import com.campusfind.infrastructure.persistence.repository.SecurityOfficerProfileRepository;
 import com.campusfind.infrastructure.persistence.repository.UserRepository;
 import java.time.Instant;
@@ -40,8 +38,7 @@ public class CollectionService {
 
     private final ClaimRepository claimRepository;
     private final FoundItemRepository foundItemRepository;
-    private final LostReportRepository lostReportRepository;
-    private final LostReportAuditLogRepository lostReportAuditLogRepository;
+    private final LostReportService lostReportService;
     private final ItemCollectionLogRepository itemCollectionLogRepository;
     private final UserRepository userRepository;
     private final SecurityOfficerProfileRepository securityOfficerProfileRepository;
@@ -52,8 +49,7 @@ public class CollectionService {
     public CollectionService(
             ClaimRepository claimRepository,
             FoundItemRepository foundItemRepository,
-            LostReportRepository lostReportRepository,
-            LostReportAuditLogRepository lostReportAuditLogRepository,
+            LostReportService lostReportService,
             ItemCollectionLogRepository itemCollectionLogRepository,
             UserRepository userRepository,
             SecurityOfficerProfileRepository securityOfficerProfileRepository,
@@ -62,8 +58,7 @@ public class CollectionService {
             AuditService auditService) {
         this.claimRepository = claimRepository;
         this.foundItemRepository = foundItemRepository;
-        this.lostReportRepository = lostReportRepository;
-        this.lostReportAuditLogRepository = lostReportAuditLogRepository;
+        this.lostReportService = lostReportService;
         this.itemCollectionLogRepository = itemCollectionLogRepository;
         this.userRepository = userRepository;
         this.securityOfficerProfileRepository = securityOfficerProfileRepository;
@@ -127,43 +122,12 @@ public class CollectionService {
         item.setAvailabilityStatus(ItemAvailabilityStatus.RETURNED);
         foundItemRepository.save(item);
 
-        // If a linked lost report was provided, transition it to RECOVERED
+        // If a linked lost report was provided, delegate its recovery to LostReportService
         UUID linkedLostReportId = request != null ? request.linkedLostReportId() : null;
-        LostReportStatus linkedLostReportStatus = null;
         LostReportEntity resolvedLostReport = null;
 
         if (linkedLostReportId != null) {
-            LostReportEntity lostReport = lostReportRepository.findById(linkedLostReportId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Linked lost report not found: " + linkedLostReportId));
-
-            // Validate that the linked lost report belongs to the claimant
-            if (!lostReport.getStudent().getId().equals(claim.getClaimant().getId())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Linked lost report does not belong to the claiming student");
-            }
-
-            // Must be in ACTIVE status to recover
-            if (lostReport.getStatus() != LostReportStatus.ACTIVE) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Linked lost report is already in terminal state: " + lostReport.getStatus());
-            }
-
-            lostReport.setStatus(LostReportStatus.RECOVERED);
-            lostReport.setResolvedAt(now);
-            lostReport.setResolvedBy(officer);
-            lostReportRepository.save(lostReport);
-            resolvedLostReport = lostReport;
-            linkedLostReportStatus = lostReport.getStatus();
-
-            // Audit the lost report transition
-            LostReportAuditLogEntity auditLog = new LostReportAuditLogEntity(
-                    lostReport,
-                    officer.getId(),
-                    officer.getRole().name(),
-                    "RECOVERED_VIA_COLLECTION",
-                    LostReportStatus.ACTIVE.name(),
-                    LostReportStatus.RECOVERED.name(),
-                    "Physical collection confirmed at Central Security Office; recovered via claim " + claimId
-            );
-            lostReportAuditLogRepository.save(auditLog);
+            resolvedLostReport = lostReportService.resolveFromCollection(linkedLostReportId, claim.getClaimant(), officer, claimId);
         }
 
         // Record immutable physical collection audit log
@@ -210,7 +174,7 @@ public class CollectionService {
                 claim.getStatus(),
                 item.getAvailabilityStatus(),
                 linkedLostReportId,
-                linkedLostReportStatus,
+                resolvedLostReport != null ? resolvedLostReport.getStatus() : null,
                 notes,
                 pointsAwarded
         );

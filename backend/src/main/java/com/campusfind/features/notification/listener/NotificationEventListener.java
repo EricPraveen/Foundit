@@ -1,5 +1,11 @@
-package com.campusfind.features.notification.event;
+package com.campusfind.features.notification.listener;
 
+import com.campusfind.common.event.ClaimApprovedEvent;
+import com.campusfind.common.event.ClaimRejectedEvent;
+import com.campusfind.common.event.ClaimSubmittedEvent;
+import com.campusfind.common.event.CollectionConfirmedEvent;
+import com.campusfind.common.event.FoundItemHandoverConfirmedEvent;
+import com.campusfind.common.event.FoundItemReportedEvent;
 import com.campusfind.domain.notification.NotificationEntityType;
 import com.campusfind.domain.notification.NotificationType;
 import com.campusfind.features.notification.NotificationService;
