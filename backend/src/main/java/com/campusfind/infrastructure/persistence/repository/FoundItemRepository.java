@@ -33,6 +33,11 @@ public interface FoundItemRepository extends JpaRepository<FoundItemEntity, UUID
     List<FoundItemEntity> findByHandoverStatusAndCreatedAtBeforeOrderByCreatedAtAsc(
             HandoverStatus handoverStatus, Instant cutoff);
 
+    List<FoundItemEntity> findByHandoverStatus(HandoverStatus handoverStatus);
+
+    List<FoundItemEntity> findByAvailabilityStatusAndHandoverConfirmedAtBefore(
+            ItemAvailabilityStatus availabilityStatus, Instant cutoff);
+
     Page<FoundItemEntity> findByAvailabilityStatusAndHandoverStatus(
             ItemAvailabilityStatus availabilityStatus, HandoverStatus handoverStatus, Pageable pageable);
 }

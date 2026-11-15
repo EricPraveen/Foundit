@@ -55,6 +55,17 @@ app:
     enabled: ${REPUTATION_ENABLED:true}
     default-handover-points: ${REPUTATION_DEFAULT_HANDOVER_POINTS:10}
     default-collection-points: ${REPUTATION_DEFAULT_COLLECTION_POINTS:0}
+  notification:
+    email-enabled: ${EMAIL_NOTIFICATIONS_ENABLED:true}
+    max-email-retries: ${EMAIL_MAX_RETRIES:3}
+    email-retry-delay-seconds: ${EMAIL_RETRY_DELAY_SECONDS:300}
+    unclaimed-enabled: ${UNCLAIMED_ESCALATION_ENABLED:false}
+    unclaimed-threshold-days: ${UNCLAIMED_THRESHOLD_DAYS:30}
+    base-url: ${APP_BASE_URL:http://localhost:5173}
+  scheduling:
+    handover-reminder-cron: ${HANDOVER_REMINDER_CRON:0 0 * * * *}
+    unclaimed-escalation-cron: ${UNCLAIMED_ESCALATION_CRON:0 0 2 * * *}
+    email-retry-cron: ${EMAIL_RETRY_CRON:0 */5 * * * *}
 
 # Actuator Health & Metrics
 management:

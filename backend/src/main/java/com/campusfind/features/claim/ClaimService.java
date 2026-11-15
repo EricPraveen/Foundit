@@ -12,6 +12,9 @@ import com.campusfind.features.claim.dto.ClaimSummaryResponse;
 import com.campusfind.features.claim.dto.ClaimantSummary;
 import com.campusfind.features.claim.dto.DownloadedEvidence;
 import com.campusfind.features.claim.dto.RejectClaimRequest;
+import com.campusfind.features.notification.event.ClaimApprovedEvent;
+import com.campusfind.features.notification.event.ClaimRejectedEvent;
+import com.campusfind.features.notification.event.ClaimSubmittedEvent;
 import com.campusfind.infrastructure.persistence.entity.ClaimEntity;
 import com.campusfind.infrastructure.persistence.entity.ClaimEvidenceEntity;
 import com.campusfind.infrastructure.persistence.entity.FoundItemEntity;
@@ -32,6 +35,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -56,6 +60,7 @@ public class ClaimService {
     private final SecurityOfficerProfileRepository securityOfficerProfileRepository;
     private final StorageService storageService;
     private final String storageBucket;
+    private final ApplicationEventPublisher eventPublisher;
 
     public ClaimService(
             ClaimRepository claimRepository,
@@ -64,7 +69,8 @@ public class ClaimService {
             UserRepository userRepository,
             SecurityOfficerProfileRepository securityOfficerProfileRepository,
             StorageService storageService,
-            @Value("${app.storage.bucket:campusfind-storage}") String storageBucket) {
+            @Value("${app.storage.bucket:campusfind-storage}") String storageBucket,
+            ApplicationEventPublisher eventPublisher) {
         this.claimRepository = claimRepository;
         this.claimEvidenceRepository = claimEvidenceRepository;
         this.foundItemRepository = foundItemRepository;
@@ -72,6 +78,7 @@ public class ClaimService {
         this.securityOfficerProfileRepository = securityOfficerProfileRepository;
         this.storageService = storageService;
         this.storageBucket = storageBucket;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -140,6 +147,9 @@ public class ClaimService {
         if (additionalProof != null && !additionalProof.isEmpty()) {
             storeEvidence(savedClaim, EvidenceType.ADDITIONAL_PROOF, additionalProof);
         }
+
+        // Publish claim submitted event
+        eventPublisher.publishEvent(new ClaimSubmittedEvent(savedClaim));
 
         return mapToResponse(savedClaim);
     }
@@ -314,6 +324,10 @@ public class ClaimService {
         foundItemRepository.save(foundItem);
 
         ClaimEntity savedClaim = claimRepository.save(claim);
+
+        // Publish claim approved event
+        eventPublisher.publishEvent(new ClaimApprovedEvent(savedClaim, officer));
+
         return mapToResponse(savedClaim);
     }
 
@@ -344,6 +358,10 @@ public class ClaimService {
         claim.setRejectionReason(request.rejectionReason().trim());
 
         ClaimEntity savedClaim = claimRepository.save(claim);
+
+        // Publish claim rejected event
+        eventPublisher.publishEvent(new ClaimRejectedEvent(savedClaim, officer, request.rejectionReason().trim()));
+
         return mapToResponse(savedClaim);
     }
 

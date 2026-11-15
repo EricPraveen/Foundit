@@ -6,5 +6,6 @@ public enum ItemAvailabilityStatus {
     CLAIM_PENDING,
     COLLECTED,
     RETURNED,
-    DISPOSED
+    DISPOSED,
+    UNCLAIMED
 }
