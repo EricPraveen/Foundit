@@ -1,10 +1,9 @@
-package com.campusfind.features.notification.event;
+package com.campusfind.common.event;
 
 import com.campusfind.infrastructure.persistence.entity.ClaimEntity;
 import com.campusfind.infrastructure.persistence.entity.UserEntity;
 
-public record ClaimRejectedEvent(
+public record ClaimApprovedEvent(
         ClaimEntity claim,
-        UserEntity officer,
-        String rejectionReason
+        UserEntity officer
 ) {}

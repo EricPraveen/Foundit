@@ -1,4 +1,4 @@
-package com.campusfind.features.notification.event;
+package com.campusfind.common.event;
 
 import com.campusfind.infrastructure.persistence.entity.FoundItemEntity;
 
