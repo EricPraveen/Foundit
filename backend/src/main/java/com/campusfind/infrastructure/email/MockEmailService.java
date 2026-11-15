@@ -20,4 +20,9 @@ public class MockEmailService implements EmailService {
     public void sendPasswordResetEmail(String toEmail, String token) {
         log.info("Simulated email dispatch: Password reset email prepared for recipient [{}]", toEmail);
     }
+
+    @Override
+    public void sendNotificationEmail(String toEmail, String subject, String body) {
+        log.info("Simulated email dispatch: Notification email [{}] prepared for recipient [{}]", subject, toEmail);
+    }
 }

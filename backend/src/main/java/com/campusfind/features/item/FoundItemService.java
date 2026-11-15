@@ -10,6 +10,8 @@ import com.campusfind.features.item.dto.FoundItemResponse;
 import com.campusfind.features.item.dto.FoundItemSummaryResponse;
 import com.campusfind.features.item.dto.HandoverLogResponse;
 import com.campusfind.features.item.dto.UpdateFoundItemRequest;
+import com.campusfind.features.notification.event.FoundItemHandoverConfirmedEvent;
+import com.campusfind.features.notification.event.FoundItemReportedEvent;
 import com.campusfind.features.reputation.ReputationService;
 import com.campusfind.infrastructure.persistence.entity.CategoryEntity;
 import com.campusfind.infrastructure.persistence.entity.FoundItemEntity;
@@ -38,6 +40,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -64,6 +67,7 @@ public class FoundItemService {
     private final SecurityOfficerProfileRepository securityOfficerProfileRepository;
     private final StorageService storageService;
     private final ReputationService reputationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Value("${app.storage.bucket:found-items}")
     private String storageBucket;
@@ -78,7 +82,8 @@ public class FoundItemService {
             SecurityOfficeRepository securityOfficeRepository,
             SecurityOfficerProfileRepository securityOfficerProfileRepository,
             StorageService storageService,
-            ReputationService reputationService) {
+            ReputationService reputationService,
+            ApplicationEventPublisher eventPublisher) {
         this.foundItemRepository = foundItemRepository;
         this.foundItemImageRepository = foundItemImageRepository;
         this.foundItemHandoverLogRepository = foundItemHandoverLogRepository;
@@ -89,6 +94,7 @@ public class FoundItemService {
         this.securityOfficerProfileRepository = securityOfficerProfileRepository;
         this.storageService = storageService;
         this.reputationService = reputationService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -125,6 +131,7 @@ public class FoundItemService {
         );
 
         FoundItemEntity saved = foundItemRepository.save(entity);
+        eventPublisher.publishEvent(new FoundItemReportedEvent(saved));
         return mapToResponse(saved, true);
     }
 
@@ -385,7 +392,10 @@ public class FoundItemService {
         foundItemHandoverLogRepository.save(logEntity);
 
         // Award finder reputation points for confirmed physical handover
-        reputationService.awardHandoverPoints(saved, officer);
+        int points = reputationService.awardHandoverPoints(saved, officer);
+
+        // Publish handover event
+        eventPublisher.publishEvent(new FoundItemHandoverConfirmedEvent(saved, officer, points));
 
         return mapToResponse(saved, true);
     }

@@ -1,8 +1,8 @@
 # Project status
 
-**Current phase:** Phase 1 — Backend Implementation (Slice 6: Physical Collection, Return Status & Reputation Ledger / BACKEND-07)
+**Current phase:** Phase 1 — Backend Implementation (Slice 7: In-App and Email Notifications, Reminders, and Unclaimed Escalation / BACKEND-08)
 
-**Overall:** Physical collection confirmation by Security Officers, claim completion (`COMPLETED`), item return (`RETURNED`), linked lost report recovery (`RECOVERED`), immutable collection audit logs, category-based configurable point rules, and append-only reputation ledger (`reputation_transactions`) with robust duplicate prevention fully implemented and verified with automated integration tests (113 total tests passing).
+**Overall:** In-app notification system (`notifications`), email provider abstraction (`EmailService`, `MockEmailService`) with isolated retry logs (`notification_email_deliveries`), transactional domain event decoupled listeners (`AFTER_COMMIT`), automated 24-hour pending handover reminders with cycle deduplication (`handover_reminder_logs`), and configurable unclaimed item escalation to Security Officers and Super Admins (`unclaimed_escalation_logs`) without automatic disposal fully implemented and verified with automated integration tests (127 total tests passing).
 
 ## Completed
 - [x] Project context and confirmed decisions captured
@@ -58,9 +58,16 @@
 - [x] Automatic finder reward awarding upon verified physical handover in `FoundItemService.confirmHandover`
 - [x] Flyway migration `V7__create_collection_and_reputation_tables.sql` created
 - [x] Automated test suite expanded to 113 passing tests (16 new integration tests for collection, lost report recovery, reputation balance, ledger history, and idempotency)
+- [x] Persistent in-app notifications system (`notifications` table) with unread count and read tracking (`GET /api/v1/notifications`, `GET /api/v1/notifications/unread-count`, `PATCH /api/v1/notifications/{id}/read`, `PATCH /api/v1/notifications/read-all`)
+- [x] Decoupled transactional domain event listeners using `@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)` for reporting, handovers, claims, and collections
+- [x] Email notification abstraction (`EmailService`, `MockEmailService`) with isolated retry logs (`notification_email_deliveries`) preventing business rollbacks on dispatch failures
+- [x] Idempotent 24-hour pending handover reminders (`handover_reminder_logs`) with cycle-based deduplication
+- [x] Unclaimed item monitoring and escalation (`unclaimed_escalation_logs`) transitioning items past threshold to `UNCLAIMED` without automatic disposal (disabled by default via `app.notification.unclaimed-enabled=false`)
+- [x] Flyway migration `V8__create_notifications_reminders_and_escalations.sql` created
+- [x] Automated test suite expanded to 127 passing tests (14 new integration tests for notifications, unread count, anti-IDOR, handover reminders, unclaimed escalation, email retries, and domain events)
 
 ## In progress
-- [ ] Phase 1 — Slice 7: Notifications & Unclaimed Escalation
+- [ ] Phase 1 — Slice 8: Administration & Audit
 
 ## Evidence log
 | Date | Change/evidence | Notes |
@@ -74,5 +81,6 @@
 | 2026-11-15 | BACKEND-05 (`feature/backend-05-private-lost-reports`): Private lost report lifecycle, owner isolation, officer scope, audit logs, V5 migration | Verified via `cd backend && ./mvnw clean verify` (81 tests executed, 0 failures, 0 errors, build success in 17.4s) |
 | 2026-11-15 | BACKEND-06 (`backend/backend-06-claims-review`): Claims, private evidence, officer review, single-approval concurrency, V6 migration | Verified via `cd backend && ./mvnw clean verify` (97 tests executed, 0 failures, 0 errors, build success in 25.1s) |
 | 2026-11-15 | BACKEND-07 (`backend/backend-07-collection-reputation`): Physical collection, return status, linked lost report recovery, reputation ledger, V7 migration | Verified via `cd backend && ./mvnw clean verify` (113 tests executed, 0 failures, 0 errors, build success in 27.5s) |
+| 2026-11-15 | BACKEND-08 (`backend/backend-08-notifications-escalation`): In-app notifications, email retry logs, 24h handover reminders, unclaimed escalation, V8 migration | Verified via `cd backend && ./mvnw test` (127 tests executed, 0 failures, 0 errors, build success in 30.0s) |
 
 Update this file with concrete commands/results or review evidence whenever a task is marked complete.

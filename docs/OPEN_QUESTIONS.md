@@ -5,10 +5,10 @@ These details were not resolved in the referenced conversation. Keep them visibl
 ## Needed before relevant implementation
 
 - **Index Number validation:** trusted university data integration, manual officer check, or another process? Email domain verification alone does not verify student identity.
-- **Unclaimed period:** what configurable duration triggers reminder/status/escalation?
+- **Unclaimed period:** implemented configurable scheduled escalation (`unclaimed_escalation_logs`) with `app.notification.unclaimed-threshold-days=30` and `app.notification.unclaimed-enabled=false` by default in BACKEND-08. Confirm exact university holding period before enabling in production.
 - **Retention and privacy:** retention/deletion rules for student ID images, claim evidence, closed reports, and audit logs; who can view a student's own lost report?
 - **Category taxonomy and point values:** defined configurable category rules in `category_reputation_rules` table and `application.yml` for `FOUND_ITEM_HANDOVER` and `ITEM_COLLECTION`. Confirm production point values, whether points apply retroactively, and who may change them.
-- **Notification channels:** are browser push notifications in MVP, or later? Which events count as important enough for email?
+- **Notification channels:** in-app notifications and email notification abstraction (`EmailService`) implemented with isolated retries in BACKEND-08. Confirm third-party production email provider (e.g. Resend, SendGrid, Amazon SES) and credentials. Browser push notifications remain out of MVP scope.
 - **Images/files:** storage provider, size/type limits, malware scanning, and retention. Supabase Storage was mentioned as a possible example, not selected.
 - **Authentication details:** JWT/session approach, refresh tokens, password policy, email provider, token expiry, and account recovery rules.
 - **Security Office operations:** receipt workflow, office hours/contact details, officer assignment, and escalation recipients.

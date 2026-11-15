@@ -6,6 +6,7 @@ import com.campusfind.domain.item.ItemAvailabilityStatus;
 import com.campusfind.domain.lostreport.LostReportStatus;
 import com.campusfind.features.collection.dto.CollectionConfirmationResponse;
 import com.campusfind.features.collection.dto.ConfirmCollectionRequest;
+import com.campusfind.features.notification.event.CollectionConfirmedEvent;
 import com.campusfind.features.reputation.ReputationService;
 import com.campusfind.infrastructure.persistence.entity.ClaimEntity;
 import com.campusfind.infrastructure.persistence.entity.FoundItemEntity;
@@ -25,6 +26,7 @@ import java.time.Instant;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +45,7 @@ public class CollectionService {
     private final UserRepository userRepository;
     private final SecurityOfficerProfileRepository securityOfficerProfileRepository;
     private final ReputationService reputationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public CollectionService(
             ClaimRepository claimRepository,
@@ -52,7 +55,8 @@ public class CollectionService {
             ItemCollectionLogRepository itemCollectionLogRepository,
             UserRepository userRepository,
             SecurityOfficerProfileRepository securityOfficerProfileRepository,
-            ReputationService reputationService) {
+            ReputationService reputationService,
+            ApplicationEventPublisher eventPublisher) {
         this.claimRepository = claimRepository;
         this.foundItemRepository = foundItemRepository;
         this.lostReportRepository = lostReportRepository;
@@ -61,6 +65,7 @@ public class CollectionService {
         this.userRepository = userRepository;
         this.securityOfficerProfileRepository = securityOfficerProfileRepository;
         this.reputationService = reputationService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -111,6 +116,7 @@ public class CollectionService {
         // Optional linked Lost Report transition
         UUID linkedLostReportId = null;
         LostReportStatus linkedLostReportStatus = null;
+        LostReportEntity resolvedLostReport = null;
 
         if (request != null && request.linkedLostReportId() != null) {
             UUID reqReportId = request.linkedLostReportId();
@@ -145,6 +151,7 @@ public class CollectionService {
 
             linkedLostReportId = lostReport.getId();
             linkedLostReportStatus = lostReport.getStatus();
+            resolvedLostReport = lostReport;
             log.info("Linked lost report {} transitioned to RECOVERED", lostReport.getId());
         }
 
@@ -172,6 +179,9 @@ public class CollectionService {
 
         // Award eligible collection reputation points (if configured)
         int pointsAwarded = reputationService.awardCollectionPoints(claim, item, officer);
+
+        // Publish collection confirmed event
+        eventPublisher.publishEvent(new CollectionConfirmedEvent(claim, item, officer, resolvedLostReport, pointsAwarded));
 
         log.info("Collection confirmed for claim {} and item {} by officer {}", claim.getId(), item.getId(), officer.getId());
 

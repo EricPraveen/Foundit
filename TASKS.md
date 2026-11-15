@@ -45,10 +45,10 @@ Check an item only when implemented and supported by evidence. Record evidence a
 ### Points, notifications, administration
 - [x] Category-configurable point rules; award after verified handover (Implemented in BACKEND-07 via category_reputation_rules and ReputationService)
 - [x] Prevent duplicate awards; maintain point ledger (Append-only reputation_transactions ledger with unique idempotency keys)
-- [ ] In-app/mobile-first notifications and email for important events
+- [x] In-app/mobile-first notifications and email for important events (Implemented in BACKEND-08 via notifications table, EmailService, and decoupled domain events)
 - [x] One central Security Office with multiple officers
-- [ ] Unclaimed reminder, UNCLAIMED status, and Super Admin escalation
-- [ ] Final handling follows university policy; no automatic disposal
+- [x] Unclaimed reminder, UNCLAIMED status, and Super Admin escalation (Implemented in BACKEND-08 via ReminderSchedulerService, handover_reminder_logs, and unclaimed_escalation_logs)
+- [x] Final handling follows university policy; no automatic disposal (Enforced: UNCLAIMED status triggers escalation without deletion, disposal, or transfer)
 - [ ] Admin management and audit functions
 
 ## Phase 2 — Backend completion gate
