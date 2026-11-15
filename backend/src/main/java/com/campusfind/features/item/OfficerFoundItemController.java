@@ -1,5 +1,9 @@
 package com.campusfind.features.item;
 
+import com.campusfind.domain.item.HandoverStatus;
+import com.campusfind.domain.item.ItemAvailabilityStatus;
+import com.campusfind.features.collection.CollectionService;
+import com.campusfind.features.collection.dto.CollectionConfirmationResponse;
 import com.campusfind.features.item.dto.ConfirmHandoverRequest;
 import com.campusfind.features.item.dto.FoundItemResponse;
 import com.campusfind.features.item.dto.HandoverLogResponse;
@@ -14,6 +18,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,15 +31,42 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/officer/found-items")
-@Tag(name = "Security Officer Handover", description = "Endpoints for Security Officers to review pending handovers and confirm physical custody")
+@Tag(name = "Security Officer Handover & Inventory", description = "Endpoints for Security Officers to review pending handovers, confirm physical custody, inspect inventory, and view collection history")
 @SecurityRequirement(name = "bearerAuth")
 @PreAuthorize("hasAnyRole('SECURITY_OFFICER', 'SUPER_ADMIN')")
 public class OfficerFoundItemController {
 
     private final FoundItemService foundItemService;
+    private final CollectionService collectionService;
 
-    public OfficerFoundItemController(FoundItemService foundItemService) {
+    public OfficerFoundItemController(FoundItemService foundItemService, CollectionService collectionService) {
         this.foundItemService = foundItemService;
+        this.collectionService = collectionService;
+    }
+
+    @GetMapping
+    @Operation(summary = "List and filter found items within officer office scope", description = "Retrieves found items assigned to the officer's security office with status, category, location, and search filters.")
+    public ResponseEntity<Page<FoundItemResponse>> listFoundItems(
+            Principal principal,
+            @RequestParam(required = false) ItemAvailabilityStatus availabilityStatus,
+            @RequestParam(required = false) HandoverStatus handoverStatus,
+            @RequestParam(required = false) UUID categoryId,
+            @RequestParam(required = false) UUID locationId,
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort) {
+
+        String[] sortParts = sort.split(",");
+        String property = sortParts[0];
+        Sort.Direction direction = sortParts.length > 1 && sortParts[1].equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, property));
+        Page<FoundItemResponse> items = foundItemService.officerListFoundItems(
+                principal.getName(), availabilityStatus, handoverStatus, categoryId, locationId, query, pageable);
+        return ResponseEntity.ok(items);
     }
 
     @GetMapping("/pending-handover")
@@ -71,5 +103,14 @@ public class OfficerFoundItemController {
     public ResponseEntity<List<HandoverLogResponse>> getHandoverHistory(@PathVariable UUID id) {
         List<HandoverLogResponse> history = foundItemService.getHandoverHistory(id);
         return ResponseEntity.ok(history);
+    }
+
+    @GetMapping("/{id}/collection")
+    @Operation(summary = "Get collection confirmation details for a found item", description = "Returns physical collection log and metadata for a returned found item.")
+    public ResponseEntity<CollectionConfirmationResponse> getCollectionByFoundItemId(
+            @PathVariable UUID id,
+            Principal principal) {
+        CollectionConfirmationResponse response = collectionService.getCollectionByFoundItemId(id, principal.getName());
+        return ResponseEntity.ok(response);
     }
 }

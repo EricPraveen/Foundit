@@ -19,4 +19,8 @@ public interface LostReportRepository extends JpaRepository<LostReportEntity, UU
 
     Page<LostReportEntity> findByDesignatedSecurityOfficeIdAndStatusOrderByCreatedAtDesc(
             UUID officeId, LostReportStatus status, Pageable pageable);
+
+    long countByStatus(LostReportStatus status);
+
+    long countByDesignatedSecurityOfficeIdAndStatus(UUID officeId, LostReportStatus status);
 }

@@ -4,6 +4,7 @@ import com.campusfind.domain.auth.UserRole;
 import com.campusfind.domain.claim.ClaimStatus;
 import com.campusfind.domain.item.ItemAvailabilityStatus;
 import com.campusfind.domain.lostreport.LostReportStatus;
+import com.campusfind.features.audit.AuditService;
 import com.campusfind.features.collection.dto.CollectionConfirmationResponse;
 import com.campusfind.features.collection.dto.ConfirmCollectionRequest;
 import com.campusfind.features.notification.event.CollectionConfirmedEvent;
@@ -46,6 +47,7 @@ public class CollectionService {
     private final SecurityOfficerProfileRepository securityOfficerProfileRepository;
     private final ReputationService reputationService;
     private final ApplicationEventPublisher eventPublisher;
+    private final AuditService auditService;
 
     public CollectionService(
             ClaimRepository claimRepository,
@@ -56,7 +58,8 @@ public class CollectionService {
             UserRepository userRepository,
             SecurityOfficerProfileRepository securityOfficerProfileRepository,
             ReputationService reputationService,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            AuditService auditService) {
         this.claimRepository = claimRepository;
         this.foundItemRepository = foundItemRepository;
         this.lostReportRepository = lostReportRepository;
@@ -66,6 +69,7 @@ public class CollectionService {
         this.securityOfficerProfileRepository = securityOfficerProfileRepository;
         this.reputationService = reputationService;
         this.eventPublisher = eventPublisher;
+        this.auditService = auditService;
     }
 
     @Transactional
@@ -112,60 +116,57 @@ public class CollectionService {
         }
 
         Instant now = Instant.now();
+        String notes = request != null && request.officerNotes() != null ? request.officerNotes().trim() : null;
 
-        // Optional linked Lost Report transition
-        UUID linkedLostReportId = null;
+        // Atomically update claim status to COMPLETED
+        claim.setStatus(ClaimStatus.COMPLETED);
+        claim.setReviewedAt(now);
+        claimRepository.save(claim);
+
+        // Atomically update found item availability to RETURNED
+        item.setAvailabilityStatus(ItemAvailabilityStatus.RETURNED);
+        foundItemRepository.save(item);
+
+        // If a linked lost report was provided, transition it to RECOVERED
+        UUID linkedLostReportId = request != null ? request.linkedLostReportId() : null;
         LostReportStatus linkedLostReportStatus = null;
         LostReportEntity resolvedLostReport = null;
 
-        if (request != null && request.linkedLostReportId() != null) {
-            UUID reqReportId = request.linkedLostReportId();
-            LostReportEntity lostReport = lostReportRepository.findById(reqReportId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Linked lost report not found: " + reqReportId));
+        if (linkedLostReportId != null) {
+            LostReportEntity lostReport = lostReportRepository.findById(linkedLostReportId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Linked lost report not found: " + linkedLostReportId));
 
+            // Validate that the linked lost report belongs to the claimant
             if (!lostReport.getStudent().getId().equals(claim.getClaimant().getId())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Linked lost report does not belong to claimant");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Linked lost report does not belong to the claiming student");
             }
 
+            // Must be in ACTIVE status to recover
             if (lostReport.getStatus() != LostReportStatus.ACTIVE) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Linked lost report is not ACTIVE. Current status: " + lostReport.getStatus());
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Linked lost report is already in terminal state: " + lostReport.getStatus());
             }
 
-            LostReportStatus previousStatus = lostReport.getStatus();
             lostReport.setStatus(LostReportStatus.RECOVERED);
             lostReport.setResolvedAt(now);
             lostReport.setResolvedBy(officer);
-            lostReport.setResolutionNotes("Recovered via physical collection under Claim " + claim.getId());
             lostReportRepository.save(lostReport);
+            resolvedLostReport = lostReport;
+            linkedLostReportStatus = lostReport.getStatus();
 
+            // Audit the lost report transition
             LostReportAuditLogEntity auditLog = new LostReportAuditLogEntity(
                     lostReport,
                     officer.getId(),
                     officer.getRole().name(),
                     "RECOVERED_VIA_COLLECTION",
-                    previousStatus != null ? previousStatus.name() : null,
+                    LostReportStatus.ACTIVE.name(),
                     LostReportStatus.RECOVERED.name(),
-                    "Item collected from Central Security Office under Claim " + claim.getId()
+                    "Physical collection confirmed at Central Security Office; recovered via claim " + claimId
             );
             lostReportAuditLogRepository.save(auditLog);
-
-            linkedLostReportId = lostReport.getId();
-            linkedLostReportStatus = lostReport.getStatus();
-            resolvedLostReport = lostReport;
-            log.info("Linked lost report {} transitioned to RECOVERED", lostReport.getId());
         }
 
-        // Atomically transition Claim to COMPLETED
-        claim.setStatus(ClaimStatus.COMPLETED);
-        claim.setReviewedAt(now);
-        claimRepository.save(claim);
-
-        // Atomically transition Found Item to RETURNED
-        item.setAvailabilityStatus(ItemAvailabilityStatus.RETURNED);
-        foundItemRepository.save(item);
-
-        // Save immutable collection log record
-        String notes = (request != null && request.officerNotes() != null) ? request.officerNotes().trim() : null;
+        // Record immutable physical collection audit log
         ItemCollectionLogEntity logEntity = new ItemCollectionLogEntity(
                 claim,
                 item,
@@ -182,6 +183,17 @@ public class CollectionService {
 
         // Publish collection confirmed event
         eventPublisher.publishEvent(new CollectionConfirmedEvent(claim, item, officer, resolvedLostReport, pointsAwarded));
+
+        // Record centralized audit log
+        auditService.recordSuccess(
+                officer.getId(),
+                officer.getEmail(),
+                officer.getRole().name(),
+                "COLLECTION_CONFIRMED",
+                "COLLECTION",
+                savedLog.getId().toString(),
+                "Physical collection confirmed for claim " + claim.getId() + " and item " + item.getId() +
+                        (notes != null ? ". Notes: " + notes : ""));
 
         log.info("Collection confirmed for claim {} and item {} by officer {}", claim.getId(), item.getId(), officer.getId());
 
@@ -201,6 +213,59 @@ public class CollectionService {
                 linkedLostReportStatus,
                 notes,
                 pointsAwarded
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public CollectionConfirmationResponse getCollectionByClaimId(UUID claimId, String officerEmail) {
+        UserEntity officerUser = getUserByEmail(officerEmail);
+        ItemCollectionLogEntity log = itemCollectionLogRepository.findByClaimId(claimId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Collection record not found for claim: " + claimId));
+
+        validateOfficerOfficeScope(officerUser, log.getSecurityOffice().getId());
+
+        return mapToCollectionResponse(log);
+    }
+
+    @Transactional(readOnly = true)
+    public CollectionConfirmationResponse getCollectionByFoundItemId(UUID foundItemId, String officerEmail) {
+        UserEntity officerUser = getUserByEmail(officerEmail);
+        ItemCollectionLogEntity log = itemCollectionLogRepository.findByFoundItemId(foundItemId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Collection record not found for found item: " + foundItemId));
+
+        validateOfficerOfficeScope(officerUser, log.getSecurityOffice().getId());
+
+        return mapToCollectionResponse(log);
+    }
+
+    private void validateOfficerOfficeScope(UserEntity officerUser, UUID officeId) {
+        if (officerUser.getRole() == UserRole.SECURITY_OFFICER) {
+            SecurityOfficerProfileEntity profile = securityOfficerProfileRepository.findById(officerUser.getId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Officer profile not configured."));
+
+            if (!profile.getSecurityOffice().getId().equals(officeId)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied: Collection record is outside your assigned security office scope.");
+            }
+        }
+    }
+
+    private CollectionConfirmationResponse mapToCollectionResponse(ItemCollectionLogEntity log) {
+        return new CollectionConfirmationResponse(
+                log.getId(),
+                log.getClaim().getId(),
+                log.getFoundItem().getId(),
+                log.getClaimant().getId(),
+                log.getClaimant().getFullName(),
+                log.getClaimant().getEmail(),
+                log.getOfficer().getId(),
+                log.getOfficer().getFullName(),
+                log.getCollectedAt(),
+                log.getClaim().getStatus(),
+                log.getFoundItem().getAvailabilityStatus(),
+                null,
+                null,
+                log.getOfficerNotes(),
+                0
         );
     }
 

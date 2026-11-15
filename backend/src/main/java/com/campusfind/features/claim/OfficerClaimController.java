@@ -118,4 +118,13 @@ public class OfficerClaimController {
         CollectionConfirmationResponse response = collectionService.confirmCollection(claimId, principal.getName(), request);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/{claimId}/collection")
+    @Operation(summary = "Get collection confirmation details for a claim", description = "Returns physical collection log and metadata for a completed claim.")
+    public ResponseEntity<CollectionConfirmationResponse> getCollectionByClaimId(
+            @PathVariable UUID claimId,
+            Principal principal) {
+        CollectionConfirmationResponse response = collectionService.getCollectionByClaimId(claimId, principal.getName());
+        return ResponseEntity.ok(response);
+    }
 }

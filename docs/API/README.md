@@ -1,7 +1,22 @@
-# API contract workspace
+# API Contract Documentation
 
-The API contract is not defined yet. Produce OpenAPI from the implemented backend and keep this folder synchronized.
+This directory contains the documented REST API contracts for the CampusFind (Foundit) backend.
 
-Suggested resource families: `/api/v1/auth`, `/api/v1/me`, `/api/v1/lost-reports`, `/api/v1/found-items`, `/api/v1/claims`, `/api/v1/notifications`, `/api/v1/security`, `/api/v1/admin`.
+## Resource Families
 
-Before publishing endpoints, document role access, ownership checks, validation, pagination, error format, and which fields are hidden. Never include Student ID images, Index Numbers, or ownership evidence in student-facing listing/detail responses.
+- [Authentication & Identity](AUTH.md): Registration, email verification, login, password management, and user profiles.
+- [Reference Data](REFERENCE_DATA.md): Public categories, locations, and security offices.
+- [Found Items](FOUND_ITEMS.md): Found item reporting, public catalog, and officer handover.
+- [Lost Reports](LOST_REPORTS.md): Private lost reports, student ownership, and officer search.
+- [Claims & Verification](CLAIMS.md): Claim submission, private evidence handling, and officer approvals.
+- [Physical Collection & Return](COLLECTION.md): Officer physical verification at security desks, return transitions, and reputation awards.
+- [Notifications & Reminders](NOTIFICATIONS.md): In-app notifications, mock email dispatch, and scheduled escalation jobs.
+- [Security Officer Operational APIs](OFFICER.md): Officer operational dashboard, inventory management, claim review, and collection history.
+- [Super Admin Governance](ADMIN.md): User account governance, role assignment, reputation rules, and system configuration.
+- [Audit Trail](AUDIT.md): Immutable audit logging and administrative audit inspection.
+
+## Privacy & Security Guarantees
+
+- **Anti-IDOR:** All student operations verify object ownership against the authenticated JWT principal.
+- **Role Isolation:** Privileged administrative and officer routes are guarded with Spring Security method and URL authorization (`hasRole('SECURITY_OFFICER')`, `hasRole('SUPER_ADMIN')`).
+- **Data Protection:** Claim evidence, Student ID images, and Index Numbers are strictly private and never exposed in public listings or student-facing endpoints.

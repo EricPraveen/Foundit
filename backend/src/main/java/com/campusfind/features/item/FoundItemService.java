@@ -3,6 +3,7 @@ package com.campusfind.features.item;
 import com.campusfind.domain.auth.UserRole;
 import com.campusfind.domain.item.HandoverStatus;
 import com.campusfind.domain.item.ItemAvailabilityStatus;
+import com.campusfind.features.audit.AuditService;
 import com.campusfind.features.item.dto.ConfirmHandoverRequest;
 import com.campusfind.features.item.dto.CreateFoundItemRequest;
 import com.campusfind.features.item.dto.FoundItemImageResponse;
@@ -68,6 +69,7 @@ public class FoundItemService {
     private final StorageService storageService;
     private final ReputationService reputationService;
     private final ApplicationEventPublisher eventPublisher;
+    private final AuditService auditService;
 
     @Value("${app.storage.bucket:found-items}")
     private String storageBucket;
@@ -83,7 +85,8 @@ public class FoundItemService {
             SecurityOfficerProfileRepository securityOfficerProfileRepository,
             StorageService storageService,
             ReputationService reputationService,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            AuditService auditService) {
         this.foundItemRepository = foundItemRepository;
         this.foundItemImageRepository = foundItemImageRepository;
         this.foundItemHandoverLogRepository = foundItemHandoverLogRepository;
@@ -95,6 +98,7 @@ public class FoundItemService {
         this.storageService = storageService;
         this.reputationService = reputationService;
         this.eventPublisher = eventPublisher;
+        this.auditService = auditService;
     }
 
     @Transactional
@@ -132,6 +136,14 @@ public class FoundItemService {
 
         FoundItemEntity saved = foundItemRepository.save(entity);
         eventPublisher.publishEvent(new FoundItemReportedEvent(saved));
+        auditService.recordSuccess(
+                finder.getId(),
+                finder.getEmail(),
+                "STUDENT",
+                "FOUND_ITEM_REPORTED",
+                "FOUND_ITEM",
+                saved.getId().toString(),
+                "Found item reported: " + saved.getTitle());
         return mapToResponse(saved, true);
     }
 
@@ -269,6 +281,14 @@ public class FoundItemService {
         item.setAvailabilityStatus(ItemAvailabilityStatus.UNAVAILABLE);
 
         FoundItemEntity saved = foundItemRepository.save(item);
+        auditService.recordSuccess(
+                user.getId(),
+                user.getEmail(),
+                "STUDENT",
+                "FOUND_ITEM_CANCELLED",
+                "FOUND_ITEM",
+                saved.getId().toString(),
+                "Found item report cancelled by finder");
         return mapToResponse(saved, true);
     }
 
@@ -397,6 +417,15 @@ public class FoundItemService {
         // Publish handover event
         eventPublisher.publishEvent(new FoundItemHandoverConfirmedEvent(saved, officer, points));
 
+        auditService.recordSuccess(
+                officer.getId(),
+                officer.getEmail(),
+                officer.getRole().name(),
+                "FOUND_ITEM_HANDOVER_CONFIRMED",
+                "FOUND_ITEM",
+                saved.getId().toString(),
+                "Physical handover confirmed at office: " + saved.getDesignatedSecurityOffice().getName() + (notes != null ? ". Notes: " + notes : ""));
+
         return mapToResponse(saved, true);
     }
 
@@ -432,6 +461,57 @@ public class FoundItemService {
                 .stream()
                 .map(this::mapToLogResponse)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<FoundItemResponse> officerListFoundItems(
+            String officerEmail,
+            ItemAvailabilityStatus availabilityStatus,
+            HandoverStatus handoverStatus,
+            UUID categoryId,
+            UUID locationId,
+            String query,
+            Pageable pageable) {
+
+        UserEntity officer = getUserByEmail(officerEmail);
+        UUID officeId = null;
+        if (officer.getRole() == UserRole.SECURITY_OFFICER) {
+            SecurityOfficerProfileEntity profile = securityOfficerProfileRepository.findById(officer.getId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Officer profile not configured"));
+            officeId = profile.getSecurityOffice().getId();
+        }
+
+        final UUID finalOfficeId = officeId;
+
+        Specification<FoundItemEntity> spec = (root, cq, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (finalOfficeId != null) {
+                predicates.add(cb.equal(root.get("designatedSecurityOffice").get("id"), finalOfficeId));
+            }
+            if (availabilityStatus != null) {
+                predicates.add(cb.equal(root.get("availabilityStatus"), availabilityStatus));
+            }
+            if (handoverStatus != null) {
+                predicates.add(cb.equal(root.get("handoverStatus"), handoverStatus));
+            }
+            if (categoryId != null) {
+                predicates.add(cb.equal(root.get("category").get("id"), categoryId));
+            }
+            if (locationId != null) {
+                predicates.add(cb.equal(root.get("location").get("id"), locationId));
+            }
+            if (query != null && !query.isBlank()) {
+                String pattern = "%" + query.trim().toLowerCase() + "%";
+                Predicate titleMatch = cb.like(cb.lower(root.get("title")), pattern);
+                Predicate descMatch = cb.like(cb.lower(cb.coalesce(root.get("description"), "")), pattern);
+                predicates.add(cb.or(titleMatch, descMatch));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        return foundItemRepository.findAll(spec, pageable).map(item -> mapToResponse(item, true));
     }
 
     private UserEntity getUserByEmail(String email) {

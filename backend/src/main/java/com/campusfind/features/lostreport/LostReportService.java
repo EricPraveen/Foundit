@@ -2,6 +2,7 @@ package com.campusfind.features.lostreport;
 
 import com.campusfind.domain.auth.UserRole;
 import com.campusfind.domain.lostreport.LostReportStatus;
+import com.campusfind.features.audit.AuditService;
 import com.campusfind.features.category.dto.CategoryResponse;
 import com.campusfind.features.location.dto.LocationResponse;
 import com.campusfind.features.lostreport.dto.CancelLostReportRequest;
@@ -64,6 +65,7 @@ public class LostReportService {
     private final SecurityOfficeRepository securityOfficeRepository;
     private final SecurityOfficerProfileRepository securityOfficerProfileRepository;
     private final StorageService storageService;
+    private final AuditService auditService;
     private final String storageBucket;
 
     public LostReportService(
@@ -76,6 +78,7 @@ public class LostReportService {
             SecurityOfficeRepository securityOfficeRepository,
             SecurityOfficerProfileRepository securityOfficerProfileRepository,
             StorageService storageService,
+            AuditService auditService,
             @Value("${app.storage.bucket:campusfind-storage}") String storageBucket) {
         this.lostReportRepository = lostReportRepository;
         this.lostReportImageRepository = lostReportImageRepository;
@@ -86,6 +89,7 @@ public class LostReportService {
         this.securityOfficeRepository = securityOfficeRepository;
         this.securityOfficerProfileRepository = securityOfficerProfileRepository;
         this.storageService = storageService;
+        this.auditService = auditService;
         this.storageBucket = storageBucket;
     }
 
@@ -547,6 +551,15 @@ public class LostReportService {
                 details
         );
         lostReportAuditLogRepository.save(log);
+
+        auditService.recordSuccess(
+                actorId,
+                null,
+                actorRole,
+                "LOST_REPORT_" + action,
+                "LOST_REPORT",
+                report.getId().toString(),
+                details);
     }
 
     private UserEntity getUserByEmail(String email) {

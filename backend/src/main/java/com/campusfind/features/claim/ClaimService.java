@@ -5,6 +5,7 @@ import com.campusfind.domain.claim.ClaimStatus;
 import com.campusfind.domain.claim.EvidenceType;
 import com.campusfind.domain.item.HandoverStatus;
 import com.campusfind.domain.item.ItemAvailabilityStatus;
+import com.campusfind.features.audit.AuditService;
 import com.campusfind.features.claim.dto.ApproveClaimRequest;
 import com.campusfind.features.claim.dto.ClaimEvidenceResponse;
 import com.campusfind.features.claim.dto.ClaimResponse;
@@ -61,6 +62,7 @@ public class ClaimService {
     private final StorageService storageService;
     private final String storageBucket;
     private final ApplicationEventPublisher eventPublisher;
+    private final AuditService auditService;
 
     public ClaimService(
             ClaimRepository claimRepository,
@@ -70,7 +72,8 @@ public class ClaimService {
             SecurityOfficerProfileRepository securityOfficerProfileRepository,
             StorageService storageService,
             @Value("${app.storage.bucket:campusfind-storage}") String storageBucket,
-            ApplicationEventPublisher eventPublisher) {
+            ApplicationEventPublisher eventPublisher,
+            AuditService auditService) {
         this.claimRepository = claimRepository;
         this.claimEvidenceRepository = claimEvidenceRepository;
         this.foundItemRepository = foundItemRepository;
@@ -79,6 +82,7 @@ public class ClaimService {
         this.storageService = storageService;
         this.storageBucket = storageBucket;
         this.eventPublisher = eventPublisher;
+        this.auditService = auditService;
     }
 
     @Transactional
@@ -150,6 +154,15 @@ public class ClaimService {
 
         // Publish claim submitted event
         eventPublisher.publishEvent(new ClaimSubmittedEvent(savedClaim));
+
+        auditService.recordSuccess(
+                student.getId(),
+                student.getEmail(),
+                "STUDENT",
+                "CLAIM_SUBMITTED",
+                "CLAIM",
+                savedClaim.getId().toString(),
+                "Ownership claim submitted for item " + foundItem.getId());
 
         return mapToResponse(savedClaim);
     }
@@ -328,6 +341,15 @@ public class ClaimService {
         // Publish claim approved event
         eventPublisher.publishEvent(new ClaimApprovedEvent(savedClaim, officer));
 
+        auditService.recordSuccess(
+                officer.getId(),
+                officer.getEmail(),
+                officer.getRole().name(),
+                "CLAIM_APPROVED",
+                "CLAIM",
+                savedClaim.getId().toString(),
+                "Ownership claim approved for item " + foundItem.getId());
+
         return mapToResponse(savedClaim);
     }
 
@@ -361,6 +383,15 @@ public class ClaimService {
 
         // Publish claim rejected event
         eventPublisher.publishEvent(new ClaimRejectedEvent(savedClaim, officer, request.rejectionReason().trim()));
+
+        auditService.recordSuccess(
+                officer.getId(),
+                officer.getEmail(),
+                officer.getRole().name(),
+                "CLAIM_REJECTED",
+                "CLAIM",
+                savedClaim.getId().toString(),
+                "Ownership claim rejected: " + request.rejectionReason().trim());
 
         return mapToResponse(savedClaim);
     }

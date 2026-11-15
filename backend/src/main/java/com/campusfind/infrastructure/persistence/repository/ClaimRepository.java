@@ -26,4 +26,8 @@ public interface ClaimRepository extends JpaRepository<ClaimEntity, UUID>, JpaSp
     List<ClaimEntity> findByFoundItemId(UUID foundItemId);
 
     List<ClaimEntity> findByFoundItemIdAndStatus(UUID foundItemId, ClaimStatus status);
+
+    long countByStatus(ClaimStatus status);
+
+    long countByFoundItemDesignatedSecurityOfficeIdAndStatus(UUID officeId, ClaimStatus status);
 }

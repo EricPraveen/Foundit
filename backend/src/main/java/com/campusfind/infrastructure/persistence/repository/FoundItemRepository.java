@@ -40,4 +40,12 @@ public interface FoundItemRepository extends JpaRepository<FoundItemEntity, UUID
 
     Page<FoundItemEntity> findByAvailabilityStatusAndHandoverStatus(
             ItemAvailabilityStatus availabilityStatus, HandoverStatus handoverStatus, Pageable pageable);
+
+    long countByAvailabilityStatus(ItemAvailabilityStatus availabilityStatus);
+
+    long countByDesignatedSecurityOfficeIdAndAvailabilityStatus(UUID officeId, ItemAvailabilityStatus availabilityStatus);
+
+    long countByHandoverStatus(HandoverStatus handoverStatus);
+
+    long countByDesignatedSecurityOfficeIdAndHandoverStatus(UUID officeId, HandoverStatus handoverStatus);
 }
