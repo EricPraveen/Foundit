@@ -1,8 +1,8 @@
 # Project status
 
-**Current phase:** Phase 1 — Backend Implementation (Slice 5: Claims & Private Evidence Review / BACKEND-06)
+**Current phase:** Phase 1 — Backend Implementation (Slice 6: Physical Collection, Return Status & Reputation Ledger / BACKEND-07)
 
-**Overall:** Student ownership claims, private evidence submission (Student ID & ownership proof), Security Officer review and decisions, multi-office scope boundaries, single active approved claim concurrency protection via pessimistic locking, and rejection/resubmission workflows fully implemented and verified with automated integration tests (97 total tests passing).
+**Overall:** Physical collection confirmation by Security Officers, claim completion (`COMPLETED`), item return (`RETURNED`), linked lost report recovery (`RECOVERED`), immutable collection audit logs, category-based configurable point rules, and append-only reputation ledger (`reputation_transactions`) with robust duplicate prevention fully implemented and verified with automated integration tests (113 total tests passing).
 
 ## Completed
 - [x] Project context and confirmed decisions captured
@@ -50,10 +50,17 @@
 - [x] Multiple pending claims coexistence: approving one claim preserves remaining pending claims in `PENDING` state for audit and fallback
 - [x] Claim rejection with mandatory reason (`POST /api/v1/officer/claims/{claimId}/reject`) and support for claimant resubmission with updated evidence
 - [x] Flyway migration `V6__create_claims_and_evidence_tables.sql` created
-- [x] Automated test suite expanded to 97 passing tests (16 new integration tests for claims, evidence privacy, officer review, and concurrency)
+- [x] Physical collection confirmation by Security Officers (`POST /api/v1/officer/claims/{claimId}/confirm-collection`) with claim completion (`COMPLETED`), item return (`RETURNED`), and linked lost report transition (`RECOVERED`)
+- [x] Immutable physical collection audit log (`item_collection_logs`) with unique constraints on claim and item preventing double collection
+- [x] Append-only reputation ledger (`reputation_transactions`) with transaction types (`FOUND_ITEM_HANDOVER`, `ITEM_COLLECTION`) and unique idempotency keys preventing duplicate rewards
+- [x] Configurable category-based reputation rules (`category_reputation_rules` table and `application.yml` properties)
+- [x] Principal-derived reputation endpoints (`GET /api/v1/users/me/reputation`, `GET /api/v1/users/me/reputation/transactions`) preventing IDOR
+- [x] Automatic finder reward awarding upon verified physical handover in `FoundItemService.confirmHandover`
+- [x] Flyway migration `V7__create_collection_and_reputation_tables.sql` created
+- [x] Automated test suite expanded to 113 passing tests (16 new integration tests for collection, lost report recovery, reputation balance, ledger history, and idempotency)
 
 ## In progress
-- [ ] Phase 1 — Slice 6: Physical Collection, Item Return, and Reputation Points (Issue #96: BACKEND-07)
+- [ ] Phase 1 — Slice 7: Notifications & Unclaimed Escalation
 
 ## Evidence log
 | Date | Change/evidence | Notes |
@@ -66,5 +73,6 @@
 | 2026-11-15 | BACKEND-04 (`feature/backend-04-found-reporting`): Found item reporting, officer handover, images, audit trail, V4 migration | Verified via `cd backend && ./mvnw clean verify` (56 tests executed, 0 failures, 0 errors, build success in 10.8s) |
 | 2026-11-15 | BACKEND-05 (`feature/backend-05-private-lost-reports`): Private lost report lifecycle, owner isolation, officer scope, audit logs, V5 migration | Verified via `cd backend && ./mvnw clean verify` (81 tests executed, 0 failures, 0 errors, build success in 17.4s) |
 | 2026-11-15 | BACKEND-06 (`backend/backend-06-claims-review`): Claims, private evidence, officer review, single-approval concurrency, V6 migration | Verified via `cd backend && ./mvnw clean verify` (97 tests executed, 0 failures, 0 errors, build success in 25.1s) |
+| 2026-11-15 | BACKEND-07 (`backend/backend-07-collection-reputation`): Physical collection, return status, linked lost report recovery, reputation ledger, V7 migration | Verified via `cd backend && ./mvnw clean verify` (113 tests executed, 0 failures, 0 errors, build success in 27.5s) |
 
 Update this file with concrete commands/results or review evidence whenever a task is marked complete.

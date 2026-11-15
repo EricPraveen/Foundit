@@ -19,6 +19,7 @@ import com.campusfind.infrastructure.persistence.repository.CategoryRepository;
 import com.campusfind.infrastructure.persistence.repository.FoundItemHandoverLogRepository;
 import com.campusfind.infrastructure.persistence.repository.FoundItemRepository;
 import com.campusfind.infrastructure.persistence.repository.LocationRepository;
+import com.campusfind.infrastructure.persistence.repository.ReputationTransactionRepository;
 import com.campusfind.infrastructure.persistence.repository.SecurityOfficeRepository;
 import com.campusfind.infrastructure.persistence.repository.SecurityOfficerProfileRepository;
 import com.campusfind.infrastructure.persistence.repository.UserRepository;
@@ -73,6 +74,9 @@ class OfficerHandoverIntegrationTest {
     private LocationRepository locationRepository;
 
     @Autowired
+    private ReputationTransactionRepository reputationTransactionRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -95,6 +99,7 @@ class OfficerHandoverIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        reputationTransactionRepository.deleteAll();
         handoverLogRepository.deleteAll();
         foundItemRepository.deleteAll();
         officerProfileRepository.deleteAll();
@@ -146,6 +151,7 @@ class OfficerHandoverIntegrationTest {
 
     @AfterEach
     void tearDown() {
+        reputationTransactionRepository.deleteAll();
         handoverLogRepository.deleteAll();
         foundItemRepository.deleteAll();
         officerProfileRepository.deleteAll();

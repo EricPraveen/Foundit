@@ -5,6 +5,9 @@ import com.campusfind.features.claim.dto.ApproveClaimRequest;
 import com.campusfind.features.claim.dto.ClaimResponse;
 import com.campusfind.features.claim.dto.DownloadedEvidence;
 import com.campusfind.features.claim.dto.RejectClaimRequest;
+import com.campusfind.features.collection.CollectionService;
+import com.campusfind.features.collection.dto.CollectionConfirmationResponse;
+import com.campusfind.features.collection.dto.ConfirmCollectionRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,9 +38,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class OfficerClaimController {
 
     private final ClaimService claimService;
+    private final CollectionService collectionService;
 
-    public OfficerClaimController(ClaimService claimService) {
+    public OfficerClaimController(ClaimService claimService, CollectionService collectionService) {
         this.claimService = claimService;
+        this.collectionService = collectionService;
     }
 
     @GetMapping
@@ -102,5 +107,15 @@ public class OfficerClaimController {
                 .contentType(MediaType.parseMediaType(file.contentType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.filename() + "\"")
                 .body(file.data());
+    }
+
+    @PostMapping("/{claimId}/confirm-collection")
+    @Operation(summary = "Confirm physical collection of claimed item", description = "Officer verifies physical student identity and confirms collection, atomically completing the claim, marking item RETURNED, updating linked lost report to RECOVERED if present, and awarding reputation points.")
+    public ResponseEntity<CollectionConfirmationResponse> confirmCollection(
+            @PathVariable UUID claimId,
+            Principal principal,
+            @Valid @RequestBody(required = false) ConfirmCollectionRequest request) {
+        CollectionConfirmationResponse response = collectionService.confirmCollection(claimId, principal.getName(), request);
+        return ResponseEntity.ok(response);
     }
 }
