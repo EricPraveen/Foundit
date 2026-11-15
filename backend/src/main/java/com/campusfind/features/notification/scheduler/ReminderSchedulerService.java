@@ -6,6 +6,7 @@ import com.campusfind.domain.item.ItemAvailabilityStatus;
 import com.campusfind.domain.notification.EmailDeliveryStatus;
 import com.campusfind.domain.notification.NotificationEntityType;
 import com.campusfind.domain.notification.NotificationType;
+import com.campusfind.features.audit.AuditService;
 import com.campusfind.features.notification.NotificationProperties;
 import com.campusfind.features.notification.NotificationService;
 import com.campusfind.infrastructure.email.EmailService;
@@ -46,6 +47,7 @@ public class ReminderSchedulerService {
     private final NotificationService notificationService;
     private final EmailService emailService;
     private final NotificationProperties notificationProperties;
+    private final AuditService auditService;
 
     public ReminderSchedulerService(
             FoundItemRepository foundItemRepository,
@@ -56,7 +58,8 @@ public class ReminderSchedulerService {
             UserRepository userRepository,
             NotificationService notificationService,
             EmailService emailService,
-            NotificationProperties notificationProperties) {
+            NotificationProperties notificationProperties,
+            AuditService auditService) {
         this.foundItemRepository = foundItemRepository;
         this.handoverReminderLogRepository = handoverReminderLogRepository;
         this.unclaimedEscalationLogRepository = unclaimedEscalationLogRepository;
@@ -66,6 +69,7 @@ public class ReminderSchedulerService {
         this.notificationService = notificationService;
         this.emailService = emailService;
         this.notificationProperties = notificationProperties;
+        this.auditService = auditService;
     }
 
     @Scheduled(cron = "${app.scheduling.handover-reminder-cron:0 0 * * * *}")
@@ -204,6 +208,14 @@ public class ReminderSchedulerService {
             }
 
             escalatedCount++;
+            auditService.recordSuccess(
+                    null,
+                    "SYSTEM",
+                    "SYSTEM",
+                    "UNCLAIMED_ESCALATED",
+                    "FOUND_ITEM",
+                    item.getId().toString(),
+                    "Item reached unclaimed threshold (" + thresholdDays + " days) and transitioned to UNCLAIMED");
             log.info("Escalated unclaimed item [{}] after {} days", item.getId(), thresholdDays);
         }
 

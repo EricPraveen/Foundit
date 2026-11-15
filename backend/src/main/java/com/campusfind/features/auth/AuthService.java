@@ -2,6 +2,7 @@ package com.campusfind.features.auth;
 
 import com.campusfind.domain.auth.UserRole;
 import com.campusfind.domain.auth.UserStatus;
+import com.campusfind.features.audit.AuditService;
 import com.campusfind.features.auth.dto.AuthResponse;
 import com.campusfind.features.auth.dto.LoginRequest;
 import com.campusfind.features.auth.dto.MessageResponse;
@@ -42,6 +43,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenService jwtTokenService;
     private final EmailService emailService;
+    private final AuditService auditService;
     private final long verificationTokenExpiryHours;
 
     public AuthService(
@@ -50,12 +52,14 @@ public class AuthService {
             PasswordEncoder passwordEncoder,
             JwtTokenService jwtTokenService,
             EmailService emailService,
+            AuditService auditService,
             @Value("${auth.verification-token-expiry-hours:24}") long verificationTokenExpiryHours) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenService = jwtTokenService;
         this.emailService = emailService;
+        this.auditService = auditService;
         this.verificationTokenExpiryHours = verificationTokenExpiryHours;
     }
 
@@ -131,6 +135,15 @@ public class AuthService {
 
         emailService.sendVerificationEmail(normalizedEmail, rawToken);
 
+        auditService.recordSuccess(
+                user.getId(),
+                normalizedEmail,
+                "STUDENT",
+                "USER_REGISTERED",
+                "USER",
+                user.getId().toString(),
+                "Student account registered awaiting verification");
+
         return new MessageResponse("Registration successful. Please check your @uom.lk inbox to verify your account.");
     }
 
@@ -160,6 +173,15 @@ public class AuthService {
         UserEntity user = token.getUser();
         user.setEmailVerified(true);
         userRepository.save(user);
+
+        auditService.recordSuccess(
+                user.getId(),
+                user.getEmail(),
+                user.getRole().name(),
+                "USER_EMAIL_VERIFIED",
+                "USER",
+                user.getId().toString(),
+                "Account email successfully verified");
 
         return new MessageResponse("Email successfully verified! You may now log in to Foundit.");
     }
@@ -201,24 +223,67 @@ public class AuthService {
     public AuthResponse login(LoginRequest request) {
         String normalizedEmail = normalizeEmail(request.email());
 
-        UserEntity user = userRepository.findByEmail(normalizedEmail)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password."));
+        UserEntity user = userRepository.findByEmail(normalizedEmail).orElse(null);
+        if (user == null) {
+            auditService.recordFailure(
+                    null,
+                    normalizedEmail,
+                    "ANONYMOUS",
+                    "USER_LOGIN_FAILED",
+                    "USER",
+                    null,
+                    "Login failed: User not found");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password.");
+        }
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            auditService.recordFailure(
+                    user.getId(),
+                    normalizedEmail,
+                    user.getRole().name(),
+                    "USER_LOGIN_FAILED",
+                    "USER",
+                    user.getId().toString(),
+                    "Login failed: Invalid credentials");
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password.");
         }
 
         if (!user.isEmailVerified()) {
+            auditService.recordFailure(
+                    user.getId(),
+                    normalizedEmail,
+                    user.getRole().name(),
+                    "USER_LOGIN_FAILED",
+                    "USER",
+                    user.getId().toString(),
+                    "Login failed: Email unverified");
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "Account email is not verified. Please verify your @uom.lk email before logging in.");
         }
 
         if (user.getStatus() != UserStatus.ACTIVE) {
+            auditService.recordFailure(
+                    user.getId(),
+                    normalizedEmail,
+                    user.getRole().name(),
+                    "USER_LOGIN_FAILED",
+                    "USER",
+                    user.getId().toString(),
+                    "Login failed: Account suspended or deactivated");
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "Account is currently suspended or deactivated. Please contact the administrator.");
         }
+
+        auditService.recordSuccess(
+                user.getId(),
+                normalizedEmail,
+                user.getRole().name(),
+                "USER_LOGIN_SUCCESS",
+                "USER",
+                user.getId().toString(),
+                "User login successful");
 
         String accessToken = jwtTokenService.generateToken(user);
         return AuthResponse.bearer(accessToken, jwtTokenService.getExpirationMs() / 1000, UserResponse.fromEntity(user));

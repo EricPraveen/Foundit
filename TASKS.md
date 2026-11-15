@@ -8,7 +8,7 @@ Check an item only when implemented and supported by evidence. Record evidence a
 - [x] Create backend application and local development configuration (.env.example, application.yml)
 - [x] Establish PostgreSQL and Flyway baseline (V1__init_foundation.sql, ddl-auto=validate)
 - [x] Add health endpoint, global error format, and OpenAPI (/actuator/health, GlobalExceptionHandler, /v3/api-docs)
-- [ ] Agree initial ER model and migration conventions
+- [x] Agree initial ER model and migration conventions (Flyway migrations V1 through V9 verified)
 
 ## Phase 1 — Backend implementation (frontend remains deferred)
 ### Identity and access
@@ -49,15 +49,15 @@ Check an item only when implemented and supported by evidence. Record evidence a
 - [x] One central Security Office with multiple officers
 - [x] Unclaimed reminder, UNCLAIMED status, and Super Admin escalation (Implemented in BACKEND-08 via ReminderSchedulerService, handover_reminder_logs, and unclaimed_escalation_logs)
 - [x] Final handling follows university policy; no automatic disposal (Enforced: UNCLAIMED status triggers escalation without deletion, disposal, or transfer)
-- [ ] Admin management and audit functions
+- [x] Admin management and audit functions (Implemented in BACKEND-09 via user governance, reputation rules, system config, and immutable audit logs)
 
 ## Phase 2 — Backend completion gate
-- [ ] Unit, integration, API, auth, authorization, validation, and workflow tests
-- [ ] Clean database migration path verified
-- [ ] OpenAPI contract complete and stable
-- [ ] Sensitive data privacy review completed
-- [ ] Core end-to-end backend workflows pass
-- [ ] Update `progress/STATUS.md` with evidence and mark backend gate complete
+- [x] Unit, integration, API, auth, authorization, validation, and workflow tests (155 tests passing, 0 failures, 0 errors)
+- [x] Clean database migration path verified (Flyway V1 through V9 verified)
+- [x] OpenAPI contract complete and stable (/v3/api-docs and docs/API/* updated)
+- [x] Sensitive data privacy review completed (Strict Anti-IDOR, role boundaries, sensitive payload sanitization)
+- [x] Core end-to-end backend workflows pass (Journeys A through G verified via BackendVerificationGateIntegrationTest)
+- [x] Update `progress/STATUS.md` with evidence and mark backend gate complete (docs/BACKEND_COMPLETION_REPORT.md created)
 
 ## Phase 3 — Frontend (start only after Phase 2)
 - [ ] Authentication and role-specific layouts

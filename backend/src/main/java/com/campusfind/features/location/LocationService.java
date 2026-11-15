@@ -1,5 +1,6 @@
 package com.campusfind.features.location;
 
+import com.campusfind.features.audit.AuditService;
 import com.campusfind.features.location.dto.CreateLocationRequest;
 import com.campusfind.features.location.dto.LocationResponse;
 import com.campusfind.features.location.dto.UpdateLocationRequest;
@@ -16,9 +17,11 @@ import org.springframework.web.server.ResponseStatusException;
 public class LocationService {
 
     private final LocationRepository locationRepository;
+    private final AuditService auditService;
 
-    public LocationService(LocationRepository locationRepository) {
+    public LocationService(LocationRepository locationRepository, AuditService auditService) {
         this.locationRepository = locationRepository;
+        this.auditService = auditService;
     }
 
     @Transactional(readOnly = true)
@@ -45,8 +48,18 @@ public class LocationService {
         boolean active = request.active() == null || request.active();
         String zone = request.campusZone() != null ? request.campusZone().trim() : null;
         LocationEntity location = new LocationEntity(trimmedName, zone, request.description(), active);
-        locationRepository.save(location);
-        return LocationResponse.fromEntity(location);
+        LocationEntity saved = locationRepository.save(location);
+
+        auditService.recordSuccess(
+                null,
+                null,
+                "SUPER_ADMIN",
+                "LOCATION_CREATED",
+                "LOCATION",
+                saved.getId().toString(),
+                "Location created: " + saved.getName());
+
+        return LocationResponse.fromEntity(saved);
     }
 
     @Transactional
@@ -70,8 +83,18 @@ public class LocationService {
             location.setActive(request.active());
         }
 
-        locationRepository.save(location);
-        return LocationResponse.fromEntity(location);
+        LocationEntity saved = locationRepository.save(location);
+
+        auditService.recordSuccess(
+                null,
+                null,
+                "SUPER_ADMIN",
+                "LOCATION_UPDATED",
+                "LOCATION",
+                saved.getId().toString(),
+                "Location updated: " + saved.getName());
+
+        return LocationResponse.fromEntity(saved);
     }
 
     @Transactional
@@ -80,7 +103,17 @@ public class LocationService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found."));
 
         location.setActive(active);
-        locationRepository.save(location);
-        return LocationResponse.fromEntity(location);
+        LocationEntity saved = locationRepository.save(location);
+
+        auditService.recordSuccess(
+                null,
+                null,
+                "SUPER_ADMIN",
+                "LOCATION_STATUS_CHANGED",
+                "LOCATION",
+                saved.getId().toString(),
+                "Location active status changed to: " + active);
+
+        return LocationResponse.fromEntity(saved);
     }
 }

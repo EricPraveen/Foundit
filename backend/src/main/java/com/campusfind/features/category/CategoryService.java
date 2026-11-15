@@ -1,5 +1,6 @@
 package com.campusfind.features.category;
 
+import com.campusfind.features.audit.AuditService;
 import com.campusfind.features.category.dto.CategoryResponse;
 import com.campusfind.features.category.dto.CreateCategoryRequest;
 import com.campusfind.features.category.dto.UpdateCategoryRequest;
@@ -16,9 +17,11 @@ import org.springframework.web.server.ResponseStatusException;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final AuditService auditService;
 
-    public CategoryService(CategoryRepository categoryRepository) {
+    public CategoryService(CategoryRepository categoryRepository, AuditService auditService) {
         this.categoryRepository = categoryRepository;
+        this.auditService = auditService;
     }
 
     @Transactional(readOnly = true)
@@ -44,8 +47,18 @@ public class CategoryService {
 
         boolean active = request.active() == null || request.active();
         CategoryEntity category = new CategoryEntity(trimmedName, request.description(), active);
-        categoryRepository.save(category);
-        return CategoryResponse.fromEntity(category);
+        CategoryEntity saved = categoryRepository.save(category);
+
+        auditService.recordSuccess(
+                null,
+                null,
+                "SUPER_ADMIN",
+                "CATEGORY_CREATED",
+                "CATEGORY",
+                saved.getId().toString(),
+                "Category created: " + saved.getName());
+
+        return CategoryResponse.fromEntity(saved);
     }
 
     @Transactional
@@ -66,8 +79,18 @@ public class CategoryService {
             category.setActive(request.active());
         }
 
-        categoryRepository.save(category);
-        return CategoryResponse.fromEntity(category);
+        CategoryEntity saved = categoryRepository.save(category);
+
+        auditService.recordSuccess(
+                null,
+                null,
+                "SUPER_ADMIN",
+                "CATEGORY_UPDATED",
+                "CATEGORY",
+                saved.getId().toString(),
+                "Category updated: " + saved.getName());
+
+        return CategoryResponse.fromEntity(saved);
     }
 
     @Transactional
@@ -76,7 +99,17 @@ public class CategoryService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found."));
 
         category.setActive(active);
-        categoryRepository.save(category);
-        return CategoryResponse.fromEntity(category);
+        CategoryEntity saved = categoryRepository.save(category);
+
+        auditService.recordSuccess(
+                null,
+                null,
+                "SUPER_ADMIN",
+                "CATEGORY_STATUS_CHANGED",
+                "CATEGORY",
+                saved.getId().toString(),
+                "Category active status changed to: " + active);
+
+        return CategoryResponse.fromEntity(saved);
     }
 }

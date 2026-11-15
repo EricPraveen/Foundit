@@ -74,6 +74,7 @@ public class SecurityConfig {
                                 "/api/v1/found-items",
                                 "/api/v1/found-items/{id}"
                         ).permitAll()
+                        .requestMatchers("/api/v1/admin/**").hasRole("SUPER_ADMIN")
                         .requestMatchers("/api/v1/officer/**").hasAnyRole("SECURITY_OFFICER", "SUPER_ADMIN")
                         .requestMatchers("/test/**").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()

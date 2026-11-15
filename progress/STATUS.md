@@ -1,8 +1,8 @@
 # Project status
 
-**Current phase:** Phase 1 — Backend Implementation (Slice 7: In-App and Email Notifications, Reminders, and Unclaimed Escalation / BACKEND-08)
+**Current phase:** Phase 2 — Backend Completion Gate Complete (Ready for Phase 3 Frontend Integration / BACKEND-09)
 
-**Overall:** In-app notification system (`notifications`), email provider abstraction (`EmailService`, `MockEmailService`) with isolated retry logs (`notification_email_deliveries`), transactional domain event decoupled listeners (`AFTER_COMMIT`), automated 24-hour pending handover reminders with cycle deduplication (`handover_reminder_logs`), and configurable unclaimed item escalation to Security Officers and Super Admins (`unclaimed_escalation_logs`) without automatic disposal fully implemented and verified with automated integration tests (127 total tests passing).
+**Overall:** Security Officer Operational APIs (Dashboard `GET /api/v1/officer/dashboard`, inventory listing `GET /api/v1/officer/found-items`, collection history inspection), Super Admin APIs (User management, status and role updates with last-admin and unverified-email protection, reputation rules administration, and system configuration), centralized append-only audit trail (`audit_logs` table, `V9` Flyway migration, `AuditService` with `REQUIRES_NEW` and sensitive data sanitization), and comprehensive backend verification gate suite across end-to-end Journeys A through G fully implemented and verified with automated tests (155 total tests passing, 0 failures, 0 errors).
 
 ## Completed
 - [x] Project context and confirmed decisions captured
@@ -65,9 +65,20 @@
 - [x] Unclaimed item monitoring and escalation (`unclaimed_escalation_logs`) transitioning items past threshold to `UNCLAIMED` without automatic disposal (disabled by default via `app.notification.unclaimed-enabled=false`)
 - [x] Flyway migration `V8__create_notifications_reminders_and_escalations.sql` created
 - [x] Automated test suite expanded to 127 passing tests (14 new integration tests for notifications, unread count, anti-IDOR, handover reminders, unclaimed escalation, email retries, and domain events)
+- [x] Security Officer Operational Dashboard (`GET /api/v1/officer/dashboard`) with accurate persisted counts (available, pending handovers, pending claims, pending collection, returned items, unclaimed items, active lost reports) scoped by office or global for Super Admin
+- [x] Officer Found Item inventory search and filter endpoint (`GET /api/v1/officer/found-items`)
+- [x] Officer Collection history inspection (`GET /api/v1/officer/found-items/{id}/collection` and `GET /api/v1/officer/claims/{claimId}/collection`)
+- [x] Super Admin User Management endpoints (`GET /api/v1/admin/users`, `GET /api/v1/admin/users/{userId}`, `PATCH /api/v1/admin/users/{userId}/status`, `PATCH /api/v1/admin/users/{userId}/role`) with protections preventing demotion/deactivation of the last active Super Admin, preventing activation of unverified accounts, and auto-provisioning officer profiles
+- [x] Super Admin Reputation Rules administration (`GET /api/v1/admin/reputation-rules`, `PUT /api/v1/admin/reputation-rules/{id}`)
+- [x] Super Admin System Configuration inspection (`GET /api/v1/admin/system-config`)
+- [x] Centralized append-only audit trail (`audit_logs` table, `V9__create_audit_logs.sql` Flyway migration, `AuditLogEntity`, `AuditLogRepository`, and `AuditService` with `REQUIRES_NEW`, sensitive payload sanitization, and administrative query endpoint `GET /api/v1/admin/audit-logs`)
+- [x] Cross-cutting audit logging integration across authentication, found items, claims, physical collection, lost reports, categories, locations, offices, and scheduled reminders
+- [x] Comprehensive Backend Verification Gate integration tests verifying complete Journeys A through G (`BackendVerificationGateIntegrationTest`)
+- [x] Complete test suite passing: 155 tests executed, 0 failures, 0 errors, 0 skipped, verified via `cd backend && ./mvnw clean verify`
+- [x] Comprehensive Backend Completion Report produced (`docs/BACKEND_COMPLETION_REPORT.md`) marking backend **READY** for frontend integration
 
 ## In progress
-- [ ] Phase 1 — Slice 8: Administration & Audit
+- None (Phase 1 Backend Implementation and Phase 2 Backend Completion Gate are complete)
 
 ## Evidence log
 | Date | Change/evidence | Notes |
@@ -82,5 +93,6 @@
 | 2026-11-15 | BACKEND-06 (`backend/backend-06-claims-review`): Claims, private evidence, officer review, single-approval concurrency, V6 migration | Verified via `cd backend && ./mvnw clean verify` (97 tests executed, 0 failures, 0 errors, build success in 25.1s) |
 | 2026-11-15 | BACKEND-07 (`backend/backend-07-collection-reputation`): Physical collection, return status, linked lost report recovery, reputation ledger, V7 migration | Verified via `cd backend && ./mvnw clean verify` (113 tests executed, 0 failures, 0 errors, build success in 27.5s) |
 | 2026-11-15 | BACKEND-08 (`backend/backend-08-notifications-escalation`): In-app notifications, email retry logs, 24h handover reminders, unclaimed escalation, V8 migration | Verified via `cd backend && ./mvnw test` (127 tests executed, 0 failures, 0 errors, build success in 30.0s) |
+| 2026-11-15 | BACKEND-09 (`backend/backend-09-admin-audit-verification`): Security Officer Dashboard & inventory, Super Admin user governance, reputation rules, system config, centralized append-only audit trail (`audit_logs`, V9), and comprehensive verification gate across Journeys A-G | Verified via `cd backend && ./mvnw clean verify` (155 tests executed, 0 failures, 0 errors, build success in 45.3s) |
 
 Update this file with concrete commands/results or review evidence whenever a task is marked complete.

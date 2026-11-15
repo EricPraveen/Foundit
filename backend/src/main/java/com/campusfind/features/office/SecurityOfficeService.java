@@ -2,6 +2,7 @@ package com.campusfind.features.office;
 
 import com.campusfind.domain.auth.UserRole;
 import com.campusfind.domain.auth.UserStatus;
+import com.campusfind.features.audit.AuditService;
 import com.campusfind.features.auth.AuthService;
 import com.campusfind.features.office.dto.CreateOfficerRequest;
 import com.campusfind.features.office.dto.OfficerProfileResponse;
@@ -14,7 +15,6 @@ import com.campusfind.infrastructure.persistence.repository.SecurityOfficeReposi
 import com.campusfind.infrastructure.persistence.repository.SecurityOfficerProfileRepository;
 import com.campusfind.infrastructure.persistence.repository.UserRepository;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,16 +28,19 @@ public class SecurityOfficeService {
     private final SecurityOfficerProfileRepository officerProfileRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditService auditService;
 
     public SecurityOfficeService(
             SecurityOfficeRepository officeRepository,
             SecurityOfficerProfileRepository officerProfileRepository,
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            AuditService auditService) {
         this.officeRepository = officeRepository;
         this.officerProfileRepository = officerProfileRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.auditService = auditService;
     }
 
     @Transactional(readOnly = true)
@@ -59,6 +62,16 @@ public class SecurityOfficeService {
         if (request.operatingHours() != null) office.setOperatingHours(request.operatingHours().trim());
 
         officeRepository.save(office);
+
+        auditService.recordSuccess(
+                null,
+                null,
+                "SUPER_ADMIN",
+                "OFFICE_UPDATED",
+                "SECURITY_OFFICE",
+                office.getId().toString(),
+                "Central Security Office information updated: " + office.getName());
+
         return SecurityOfficeResponse.fromEntity(office);
     }
 
@@ -108,6 +121,15 @@ public class SecurityOfficeService {
                 office,
                 request.badgeNumber() != null ? request.badgeNumber().trim() : null);
         officerProfileRepository.save(profile);
+
+        auditService.recordSuccess(
+                null,
+                null,
+                "SUPER_ADMIN",
+                "OFFICER_PROVISIONED",
+                "USER",
+                officerUser.getId().toString(),
+                "Security Officer account provisioned: " + officerUser.getEmail());
 
         return new OfficerProfileResponse(
                 officerUser.getId(),
