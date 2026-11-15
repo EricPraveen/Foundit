@@ -10,6 +10,7 @@ import com.campusfind.features.item.dto.FoundItemResponse;
 import com.campusfind.features.item.dto.FoundItemSummaryResponse;
 import com.campusfind.features.item.dto.HandoverLogResponse;
 import com.campusfind.features.item.dto.UpdateFoundItemRequest;
+import com.campusfind.features.reputation.ReputationService;
 import com.campusfind.infrastructure.persistence.entity.CategoryEntity;
 import com.campusfind.infrastructure.persistence.entity.FoundItemEntity;
 import com.campusfind.infrastructure.persistence.entity.FoundItemHandoverLogEntity;
@@ -62,6 +63,7 @@ public class FoundItemService {
     private final SecurityOfficeRepository securityOfficeRepository;
     private final SecurityOfficerProfileRepository securityOfficerProfileRepository;
     private final StorageService storageService;
+    private final ReputationService reputationService;
 
     @Value("${app.storage.bucket:found-items}")
     private String storageBucket;
@@ -75,7 +77,8 @@ public class FoundItemService {
             LocationRepository locationRepository,
             SecurityOfficeRepository securityOfficeRepository,
             SecurityOfficerProfileRepository securityOfficerProfileRepository,
-            StorageService storageService) {
+            StorageService storageService,
+            ReputationService reputationService) {
         this.foundItemRepository = foundItemRepository;
         this.foundItemImageRepository = foundItemImageRepository;
         this.foundItemHandoverLogRepository = foundItemHandoverLogRepository;
@@ -85,6 +88,7 @@ public class FoundItemService {
         this.securityOfficeRepository = securityOfficeRepository;
         this.securityOfficerProfileRepository = securityOfficerProfileRepository;
         this.storageService = storageService;
+        this.reputationService = reputationService;
     }
 
     @Transactional
@@ -379,6 +383,9 @@ public class FoundItemService {
                 notes
         );
         foundItemHandoverLogRepository.save(logEntity);
+
+        // Award finder reputation points for confirmed physical handover
+        reputationService.awardHandoverPoints(saved, officer);
 
         return mapToResponse(saved, true);
     }

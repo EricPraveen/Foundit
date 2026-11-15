@@ -39,12 +39,12 @@ Check an item only when implemented and supported by evidence. Record evidence a
 - [x] Claim requires Student ID, Index Number, and ownership proof
 - [x] Multiple claims supported; officer decides rightful owner
 - [x] Rejected claim may be resubmitted with new evidence
-- [ ] Approval/reservation/physical collection/return lifecycle (Approval/reservation implemented; collection pending BACKEND-07)
+- [x] Approval/reservation/physical collection/return lifecycle (Approval, reservation, physical collection confirmation, item return, and lost report recovery implemented in BACKEND-07)
 - [x] Sensitive evidence visible only to Security Officers
 
 ### Points, notifications, administration
-- [ ] Category-configurable point rules; award after verified handover
-- [ ] Prevent duplicate awards; maintain point ledger
+- [x] Category-configurable point rules; award after verified handover (Implemented in BACKEND-07 via category_reputation_rules and ReputationService)
+- [x] Prevent duplicate awards; maintain point ledger (Append-only reputation_transactions ledger with unique idempotency keys)
 - [ ] In-app/mobile-first notifications and email for important events
 - [x] One central Security Office with multiple officers
 - [ ] Unclaimed reminder, UNCLAIMED status, and Super Admin escalation
