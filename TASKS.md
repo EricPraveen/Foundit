@@ -61,7 +61,7 @@ Check an item only when implemented and supported by evidence. Record evidence a
 
 ## Phase 3 — Frontend (start only after Phase 2)
 - [x] React application foundation, routing, centralized API client, and UI system (FRONTEND-01)
-- [ ] Authentication and role-specific layouts (FRONTEND-02)
+- [x] Authentication and role-specific layouts (FRONTEND-02)
 - [ ] Student dashboard and lost/found features (FRONTEND-03, FRONTEND-04)
 - [ ] Claims and notifications (FRONTEND-05)
 - [ ] Security Officer dashboards and review flows (FRONTEND-06)

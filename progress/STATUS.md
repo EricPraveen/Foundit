@@ -1,6 +1,6 @@
 # Project status
 
-**Current phase:** Phase 2 — Backend Completion Gate Complete (Ready for Phase 3 Frontend Integration / BACKEND-09)
+**Current phase:** Phase 3 — Frontend Implementation (FRONTEND-02 Student Authentication Complete)
 
 **Overall:** Security Officer Operational APIs (Dashboard `GET /api/v1/officer/dashboard`, inventory listing `GET /api/v1/officer/found-items`, collection history inspection), Super Admin APIs (User management, status and role updates with last-admin and unverified-email protection, reputation rules administration, and system configuration), centralized append-only audit trail (`audit_logs` table, `V9` Flyway migration, `AuditService` with `REQUIRES_NEW` and sensitive data sanitization), and comprehensive backend verification gate suite across end-to-end Journeys A through G fully implemented and verified with automated tests (155 total tests passing, 0 failures, 0 errors).
 
@@ -77,9 +77,10 @@
 - [x] Complete test suite passing: 155 tests executed, 0 failures, 0 errors, 0 skipped, verified via `cd backend && ./mvnw clean verify`
 - [x] Comprehensive Backend Completion Report produced (`docs/BACKEND_COMPLETION_REPORT.md`) marking backend **READY** for frontend integration
 - [x] FRONTEND-01 (`frontend/frontend-01-foundation`): React 18, TypeScript Strict, Vite, Tailwind CSS, React Router v6, Axios centralized API client, Auth integration abstraction, UI Design System primitives, Responsive Layouts (Public & Authenticated with role-based navigation), and complete Vitest test suite (40 tests passing, 0 failures)
+- [x] FRONTEND-02 (`frontend/frontend-02-authentication`): Student registration with exact `@uom.lk` domain validation, single-use email verification and token resend workflows, login with JWT authentication and session rehydration, role-based redirects (`STUDENT`, `SECURITY_OFFICER`, `SUPER_ADMIN`), institutional password recovery notice, PublicOnlyRoute guest guards, and 77 automated tests (15 test suites)
 
 ## In progress
-- None (Phase 3 FRONTEND-01 Application Foundation complete; ready for FRONTEND-02 Auth Integration)
+- None (Phase 3 FRONTEND-02 Student Authentication complete; ready for FRONTEND-03 Found Item Reporting & Public Browsing)
 
 ## Evidence log
 | Date | Change/evidence | Notes |
@@ -97,5 +98,6 @@
 | 2026-11-15 | BACKEND-09 (`backend/backend-09-admin-audit-verification`): Security Officer Dashboard & inventory, Super Admin user governance, reputation rules, system config, centralized append-only audit trail (`audit_logs`, V9), and comprehensive verification gate across Journeys A-G | Verified via `cd backend && ./mvnw clean verify` (155 tests executed, 0 failures, 0 errors, build success in 45.3s) |
 | 2026-11-15 | Architecture Refactoring (`refactor/iss-02-iss-03-architecture-cleanup`): Resolved ISS-02 (relocated domain events to `common.event`) and ISS-03 (encapsulated lost report resolution in `LostReportService.resolveFromCollection`) | Verified via `cd backend && ./mvnw clean verify` (159 tests executed, 0 failures, 0 errors, build success in 45.9s) |
 | 2026-11-16 | FRONTEND-01 (`frontend/frontend-01-foundation`): React 18, TypeScript strict, Vite 6, Tailwind CSS, React Router v6, Axios centralized API client, Auth abstraction, UI Design System primitives, Layouts, Vitest test suite | Verified via `npm run lint`, `npm run typecheck`, `npm test` (40 tests passing across 9 test suites), and `npm run build` (build success in 725ms) |
+| 2026-11-16 | FRONTEND-02 (`frontend/frontend-02-authentication`): Student registration (@uom.lk validation), email verification & token resend, JWT login & session rehydration, role redirection, institutional password recovery notice, route guards | Verified via `npm run lint` (0 warnings/errors), `npm run typecheck` (clean), `npm test` (77 tests passing across 15 test suites), and `npm run build` (build success in 866ms) |
 
 Update this file with concrete commands/results or review evidence whenever a task is marked complete.

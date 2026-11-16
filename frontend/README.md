@@ -130,7 +130,8 @@ All routes are declared in `src/routes/paths.ts`:
   - `/`: Public landing page and catalogue preview
   - `/login`: University login portal
   - `/register`: Student `@uom.lk` registration
-  - `/verify-email`: Token verification flow
+  - `/verify-email`: Token verification and resend flow
+  - `/forgot-password`: Password recovery notice and institutional support desk
   - `/unauthorized`: 403 Forbidden access denial page
 - **Protected Student Application Routes (`ProtectedRoute`):**
   - `/dashboard`: Student dashboard overview
@@ -152,6 +153,36 @@ All routes are declared in `src/routes/paths.ts`:
   - `/admin/system-config`: System environment and operational settings
 - **Catch-all (`*`):**
   - 404 Not Found error page
+
+---
+
+## Authentication & Identity Implementation (FRONTEND-02)
+
+The application implements student authentication integrated with the Spring Boot backend REST API:
+
+### 1. Registration (`/register`)
+- **Institutional Email Policy:** Strictly enforces exact `@uom.lk` domain validation (subdomains like `@student.uom.lk` and external providers like `@gmail.com` are rejected).
+- **Backend Endpoint:** `POST /api/v1/auth/register` (`{ email, password, fullName }`).
+- **Post-Registration State:** Upon `201 Created`, the user is presented with a clear verification prompt directing them to check their university inbox. Automatic login is prevented until the email address is verified.
+
+### 2. Email Verification (`/verify-email`)
+- **Query Parameter Resolution:** Parses `?token={token}` directly from email verification links and submits to `GET /api/v1/auth/verify-email?token={token}`.
+- **States:** Interactive loading indicator during verification, success confirmation with direct login redirect, and comprehensive error display for expired or reused single-use tokens.
+- **Resend Verification:** Integrated resend flow calling `POST /api/v1/auth/resend-verification` (`{ email }`), displaying timing-safe generic messages to prevent account enumeration.
+
+### 3. Login (`/login`)
+- **Backend Endpoint:** `POST /api/v1/auth/login` (`{ email, password }`).
+- **Error Handling:** Formatted feedback for `401 Unauthorized` (invalid credentials) and `403 Forbidden` (unverified email with direct verification navigation, and deactivated/suspended account alerts).
+- **Session Hydration:** Stores JWT in `tokenStorage`, hydrates `user` object in `AuthProvider`, and auto-refreshes profile via `GET /api/v1/auth/me`.
+- **Role-Based Redirection:**
+  - `STUDENT` &rarr; `/dashboard`
+  - `SECURITY_OFFICER` &rarr; `/officer/dashboard`
+  - `SUPER_ADMIN` &rarr; `/admin/dashboard`
+  - Respects original location redirects (`location.state.from`) when accessing protected resources.
+
+### 4. Password Recovery Status (`/forgot-password`)
+- **Backend Status:** Automated password reset endpoints (`/forgot-password`, `/reset-password`) are not yet implemented in the Spring Boot backend.
+- **Policy Compliance:** The frontend does not simulate fake email dispatch or mock successful password changes. The dedicated `/forgot-password` view provides transparent guidance directing students to the Central Security Office or System Administrator for physical verification and credential recovery.
 
 ---
 

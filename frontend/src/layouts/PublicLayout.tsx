@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
 import { Link, Outlet } from 'react-router-dom';
-import { Search, LogIn, UserPlus, Menu, X, ShieldCheck } from 'lucide-react';
+import { Search, LogIn, UserPlus, Menu, X, ShieldCheck, LayoutDashboard } from 'lucide-react';
 import { ROUTES } from '@/routes/paths';
+import { useAuth } from '@/features/auth';
 import { Button } from '@/components/ui/Button';
 
 export const PublicLayout: React.FC = () => {
+  const { isAuthenticated, user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const getDashboardPath = () => {
+    if (user?.role === 'SUPER_ADMIN') return ROUTES.ADMIN.DASHBOARD;
+    if (user?.role === 'SECURITY_OFFICER') return ROUTES.OFFICER.DASHBOARD;
+    return ROUTES.APP.DASHBOARD;
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
@@ -33,16 +41,26 @@ export const PublicLayout: React.FC = () => {
               Browse Items
             </Link>
             <div className="h-4 w-px bg-slate-200" />
-            <Link to={ROUTES.PUBLIC.LOGIN}>
-              <Button variant="ghost" size="sm" leftIcon={<LogIn className="h-4 w-4" />}>
-                Log in
-              </Button>
-            </Link>
-            <Link to={ROUTES.PUBLIC.REGISTER}>
-              <Button variant="primary" size="sm" leftIcon={<UserPlus className="h-4 w-4" />}>
-                Register (@uom.lk)
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link to={getDashboardPath()}>
+                <Button variant="primary" size="sm" leftIcon={<LayoutDashboard className="h-4 w-4" />}>
+                  Go to Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link to={ROUTES.PUBLIC.LOGIN}>
+                  <Button variant="ghost" size="sm" leftIcon={<LogIn className="h-4 w-4" />}>
+                    Log in
+                  </Button>
+                </Link>
+                <Link to={ROUTES.PUBLIC.REGISTER}>
+                  <Button variant="primary" size="sm" leftIcon={<UserPlus className="h-4 w-4" />}>
+                    Register (@uom.lk)
+                  </Button>
+                </Link>
+              </>
+            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -68,16 +86,26 @@ export const PublicLayout: React.FC = () => {
               Browse Items
             </Link>
             <div className="pt-2 flex flex-col gap-2">
-              <Link to={ROUTES.PUBLIC.LOGIN} onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="outline" size="sm" className="w-full justify-center">
-                  Log in
-                </Button>
-              </Link>
-              <Link to={ROUTES.PUBLIC.REGISTER} onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="primary" size="sm" className="w-full justify-center">
-                  Register (@uom.lk)
-                </Button>
-              </Link>
+              {isAuthenticated ? (
+                <Link to={getDashboardPath()} onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="primary" size="sm" className="w-full justify-center" leftIcon={<LayoutDashboard className="h-4 w-4" />}>
+                    Go to Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <>
+                  <Link to={ROUTES.PUBLIC.LOGIN} onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="outline" size="sm" className="w-full justify-center">
+                      Log in
+                    </Button>
+                  </Link>
+                  <Link to={ROUTES.PUBLIC.REGISTER} onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="primary" size="sm" className="w-full justify-center">
+                      Register (@uom.lk)
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
