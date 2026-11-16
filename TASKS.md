@@ -60,12 +60,13 @@ Check an item only when implemented and supported by evidence. Record evidence a
 - [x] Update `progress/STATUS.md` with evidence and mark backend gate complete (docs/BACKEND_COMPLETION_REPORT.md created)
 
 ## Phase 3 — Frontend (start only after Phase 2)
-- [ ] Authentication and role-specific layouts
-- [ ] Student dashboard and lost/found features
-- [ ] Claims and notifications
-- [ ] Security Officer dashboards and review flows
-- [ ] Super Admin management screens
-- [ ] Responsive and accessible UI
+- [x] React application foundation, routing, centralized API client, and UI system (FRONTEND-01)
+- [ ] Authentication and role-specific layouts (FRONTEND-02)
+- [ ] Student dashboard and lost/found features (FRONTEND-03, FRONTEND-04)
+- [ ] Claims and notifications (FRONTEND-05)
+- [ ] Security Officer dashboards and review flows (FRONTEND-06)
+- [ ] Super Admin management screens (FRONTEND-07)
+- [ ] Responsive and accessible UI Polish & Verification (FRONTEND-08)
 - [ ] PWA/push support if confirmed in scope
 
 ## Phase 4 — Integration and release

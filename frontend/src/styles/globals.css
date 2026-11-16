@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 selection:bg-campus-100 selection:text-campus-900;
+  }
+
+  /* Accessible focus rings */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-campus-600 ring-offset-2 ring-offset-white;
+  }
+}
