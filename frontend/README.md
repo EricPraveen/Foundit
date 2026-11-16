@@ -194,3 +194,34 @@ The API client in `src/lib/api/apiClient.ts` provides:
 - **Error Mapping:** Converts backend `ErrorResponse` objects into typed `ApiError` instances matching Spring Boot validation schemas.
 - **Auto-Logout on 401:** Automatically triggers session cleanup and redirects to login when an unauthorized response is received.
 - **Multipart Upload Support:** Supports file uploads (`apiClient.upload<T>(url, formData)`) for found item photos, Student ID cards, and ownership proof documents.
+
+---
+
+## Student Dashboard & Profile Implementation (FRONTEND-03)
+
+The student overview and identity interfaces are fully integrated with real Spring Boot backend endpoints:
+
+### 1. Student Dashboard (`/dashboard`)
+- **Authentic Summary Statistics:**
+  - **Reputation Balance:** Sourced from `GET /api/v1/users/me/reputation` (`currentBalance` and `totalEarned`).
+  - **My Found Reports:** Sourced directly from Spring Data Page `totalElements` via `GET /api/v1/found-items/me`.
+  - **My Lost Reports:** Sourced directly from Spring Data Page `totalElements` via `GET /api/v1/lost-reports`.
+  - **My Claims:** Sourced directly from Spring Data Page `totalElements` via `GET /api/v1/claims/me`.
+  - **Zero Fabrication:** If an endpoint returns 0, a genuine `0` count is displayed. No unsupported metrics (such as separate "Active Lost Reports" or "Pending Claims" totals) are fabricated.
+- **Recent Student Activity:** Displays authorized recent lost reports, found items, claims, and reputation awards with category names, locations, timestamps, and authentic status badges. Includes tab-based filtering (`All`, `Lost`, `Found`, `Claims`, `Points`).
+- **Quick Action Links:** Direct routing to Browse Found Items, Report Lost Item, Report Found Item, My Claims, and Profile & Reputation.
+- **Campus Reference Directory:** Toggleable integrated views for Lost & Found Categories and Campus Locations.
+- **Resilience:** Queries are dispatched in parallel via `Promise.allSettled`; partial network or service failures in one section do not crash or blank out unrelated sections.
+
+### 2. Student Profile & Privacy (`/profile`)
+- **Profile Display:** Displays safe fields: Full Name, University Email (`@uom.lk`), Phone Number, Account Status badge (`ACTIVE`), Assigned Role badge (`STUDENT`), Email Verification status, and Account Creation date.
+- **Strict Privacy Invariant:** Student Index Number (`indexNumber`) and `indexNumberVerified` are strictly protected and **never displayed** in the student-facing UI.
+- **Profile Editing:** Toggles edit mode for permitted editable fields: `fullName` (required, max 150 chars) and `phoneNumber` (optional, max 30 chars). Submits updates to `PUT /api/v1/users/me` and synchronizes `AuthProvider` state so navigation headers immediately update.
+- **Protected Fields:** Institutional Email and Assigned Role are clearly flagged with `Read-only` and `System Assigned` badges and cannot be modified.
+- **Reputation Points Ledger:** Queries `GET /api/v1/users/me/reputation` and `GET /api/v1/users/me/reputation/transactions`. Displays verified points balance, lifetime points earned, and an auditable transaction history showing transaction types (`Handover Reward`, `Collection Reward`, `Admin Adjustment`), awarded points (`+X pts`), descriptions, and dates.
+
+### 3. Categories & Campus Locations Reference Data
+- **Active Categories (`/categories`):** Loaded via `GET /api/v1/categories`. Displays verified lost and found item classifications in alphabetical order with search filtering and error retry.
+- **Campus Locations (`/locations`):** Loaded via `GET /api/v1/locations`. Displays official campus facilities and custody zones (Academic Complex, Administration, Recreation) with zone filter buttons and search filtering.
+- **Reusable Data Hooks:** Exported `useCategories()` and `useLocations()` provide cached in-memory reference data for future reporting and claim submission forms (#102–#104).
+
