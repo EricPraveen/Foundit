@@ -5,6 +5,7 @@ import { PublicLayout } from '@/layouts/PublicLayout';
 import { AuthenticatedLayout } from '@/layouts/AuthenticatedLayout';
 import { ProtectedRoute } from '@/routes/guards/ProtectedRoute';
 import { RoleRoute } from '@/routes/guards/RoleRoute';
+import { PublicOnlyRoute } from '@/routes/guards/PublicOnlyRoute';
 import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 
 // Lazy-loaded pages
@@ -12,6 +13,7 @@ const HomePage = lazy(() => import('@/pages/public/HomePage'));
 const LoginPage = lazy(() => import('@/pages/public/LoginPage'));
 const RegisterPage = lazy(() => import('@/pages/public/RegisterPage'));
 const VerifyEmailPage = lazy(() => import('@/pages/public/VerifyEmailPage'));
+const ForgotPasswordPage = lazy(() => import('@/pages/public/ForgotPasswordPage'));
 const UnauthorizedPage = lazy(() => import('@/pages/public/UnauthorizedPage'));
 const NotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'));
 
@@ -58,16 +60,25 @@ export const router = createBrowserRouter([
         element: withSuspense(HomePage),
       },
       {
-        path: ROUTES.PUBLIC.LOGIN,
-        element: withSuspense(LoginPage),
-      },
-      {
-        path: ROUTES.PUBLIC.REGISTER,
-        element: withSuspense(RegisterPage),
+        element: <PublicOnlyRoute />,
+        children: [
+          {
+            path: ROUTES.PUBLIC.LOGIN,
+            element: withSuspense(LoginPage),
+          },
+          {
+            path: ROUTES.PUBLIC.REGISTER,
+            element: withSuspense(RegisterPage),
+          },
+        ],
       },
       {
         path: ROUTES.PUBLIC.VERIFY_EMAIL,
         element: withSuspense(VerifyEmailPage),
+      },
+      {
+        path: ROUTES.PUBLIC.FORGOT_PASSWORD,
+        element: withSuspense(ForgotPasswordPage),
       },
       {
         path: ROUTES.PUBLIC.UNAUTHORIZED,

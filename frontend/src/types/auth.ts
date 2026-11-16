@@ -19,6 +19,25 @@ export interface AuthResponse {
   user: User;
 }
 
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  fullName: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface ResendVerificationRequest {
+  email: string;
+}
+
+export interface MessageResponse {
+  message: string;
+}
+
 export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;

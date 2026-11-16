@@ -10,9 +10,11 @@ describe('Application Layouts', () => {
   describe('PublicLayout', () => {
     it('renders branding, navigation links, and university footer', () => {
       render(
-        <MemoryRouter>
-          <PublicLayout />
-        </MemoryRouter>
+        <AuthProvider>
+          <MemoryRouter>
+            <PublicLayout />
+          </MemoryRouter>
+        </AuthProvider>
       );
 
       expect(screen.getByText('CampusFind')).toBeInTheDocument();
@@ -23,12 +25,34 @@ describe('Application Layouts', () => {
       expect(screen.getByText(/University of Moratuwa Central Security Office/i)).toBeInTheDocument();
     });
 
+    it('renders Go to Dashboard button when user is authenticated in PublicLayout', () => {
+      const studentUser: User = {
+        id: 's-1',
+        email: 'student@uom.lk',
+        fullName: 'Jane Doe',
+        role: 'STUDENT',
+      };
+
+      render(
+        <AuthProvider initialUser={studentUser} initialToken="test-token">
+          <MemoryRouter>
+            <PublicLayout />
+          </MemoryRouter>
+        </AuthProvider>
+      );
+
+      expect(screen.getByRole('button', { name: /Go to Dashboard/i })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Log in/i })).not.toBeInTheDocument();
+    });
+
     it('toggles mobile menu when clicking menu button', async () => {
       const user = userEvent.setup();
       render(
-        <MemoryRouter>
-          <PublicLayout />
-        </MemoryRouter>
+        <AuthProvider>
+          <MemoryRouter>
+            <PublicLayout />
+          </MemoryRouter>
+        </AuthProvider>
       );
 
       const toggleButton = screen.getByLabelText('Toggle navigation menu');
