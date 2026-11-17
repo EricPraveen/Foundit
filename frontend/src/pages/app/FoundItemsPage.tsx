@@ -28,12 +28,14 @@ import {
   type FoundItemResponse,
   type StatusTab,
 } from '@/features/found-items';
+import { SubmitClaimModal } from '@/features/claims';
 
 export const FoundItemsPage: React.FC = () => {
   const [activeMainTab, setActiveMainTab] = useState<'catalog' | 'my-reports' | 'guidance'>('catalog');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [editingReport, setEditingReport] = useState<FoundItemResponse | null>(null);
   const [selectedDetailItemId, setSelectedDetailItemId] = useState<string | null>(null);
+  const [claimItemTarget, setClaimItemTarget] = useState<FoundItemResponse | null>(null);
 
   // Available Items (Catalog Browser)
   const {
@@ -426,7 +428,25 @@ export const FoundItemsPage: React.FC = () => {
             setEditingReport(found);
           }
         }}
+        onClaimItem={(item) => {
+          setSelectedDetailItemId(null);
+          setClaimItemTarget(item);
+        }}
       />
+
+      {claimItemTarget && (
+        <SubmitClaimModal
+          itemId={claimItemTarget.id}
+          itemTitle={claimItemTarget.title}
+          securityOfficeName={claimItemTarget.designatedSecurityOfficeName}
+          isOpen={Boolean(claimItemTarget)}
+          onClose={() => setClaimItemTarget(null)}
+          onSuccess={() => {
+            setClaimItemTarget(null);
+            refetchCatalog();
+          }}
+        />
+      )}
     </PageContainer>
   );
 };

@@ -86,8 +86,8 @@ frontend/
 │   │   ├── auth/               # AuthContext, AuthProvider, useAuth hook
 │   │   ├── dashboard/          # Student dashboard components (later issues)
 │   │   ├── found-items/        # Found items catalog & reporting (later issues)
-│   │   ├── lost-reports/       # Private lost report flows (later issues)
-│   │   ├── claims/             # Claim submission & evidence handling (later issues)
+│   │   ├── lost-reports/       # Private lost report lifecycle, owner isolation & photo attachments
+│   │   ├── claims/             # Ownership claim submission, evidence handling & status tracking
 │   │   ├── notifications/      # Notification feed & alerts (later issues)
 │   │   └── profile/            # User profile & reputation ledger (later issues)
 │   ├── layouts/                # Application layouts
@@ -278,6 +278,56 @@ The found item reporting, custody verification, and catalog discovery workflows 
   - Reset filters action.
 - **Spring Data Pagination:** Responsive page navigation (Page X of Y, Previous / Next controls, total items indicator).
 - **Finder Privacy Masking:** Public catalog cards and summary responses completely omit finder personal identifiers. Non-owner item detail views mask finder names.
-- **Item Details View (`/found-items/:id` and Modal):** Comprehensive item view with photo gallery, location, timestamp, custody office details, and claimant instructions.
+- **Item Details View (`/found-items/:id` and Modal):** Comprehensive item view with photo gallery, location, timestamp, custody office details, claimant instructions, and integrated "Claim This Item" action for eligible verified available items.
+
+---
+
+## Private Lost Reports & Claim Submission (FRONTEND-05)
+
+The private lost reporting, claim submission, evidence handling, and status tracking modules are fully implemented adhering strictly to security, privacy, and backend contracts:
+
+### 1. Private Lost Reports (`POST /api/v1/lost-reports`, `GET /api/v1/lost-reports`)
+- **Strict Privacy Invariant:** Lost reports are strictly private records visible only to the reporting student and authorized Security Officers. Zero public listings, search results, or public routes exist for lost reports.
+- **Creation Modal:**
+  - Title: 3–120 characters, required.
+  - Category & Campus Location: Dynamically loaded via `useCategories()` and `useLocations()`.
+  - Specific Location: Optional (max 255 chars).
+  - Lost Timestamp: Past or present validation (future timestamps rejected).
+  - Description: 5–2000 characters, required.
+  - Distinctive Features: Optional private identification markers (max 1000 chars).
+  - Designated Custody Office: Bound to Central Security Office via `useSecurityOffice()`.
+- **Photo Attachments:**
+  - Up to 3 reference photos per lost report.
+  - Formats: JPEG, PNG, WebP (max 5 MB each).
+  - Uploaded sequentially via `POST /api/v1/lost-reports/{id}/images`.
+- **Owner Report Management (`GET /api/v1/lost-reports`):**
+  - Tab filtering by status (`ALL`, `ACTIVE`, `RESOLVED`, `CANCELLED`, `RECOVERED`).
+  - Active report editing (`PUT /api/v1/lost-reports/{id}`) and photo management (`DELETE /api/v1/lost-reports/{id}/images/{imageId}`).
+  - Report cancellation (`POST /api/v1/lost-reports/{id}/cancel`) with optional cancellation reason.
+  - Report resolution (`POST /api/v1/lost-reports/{id}/resolve`) with optional resolution notes.
+- **Anti-Enumeration Protection:** Cross-student lookups for `GET /api/v1/lost-reports/{id}` return `404 Not Found` (anti-IDOR protection). Standalone `/lost-reports/:id` route safely renders a 404 message when unowned.
+
+### 2. Claim Submission (`POST /api/v1/found-items/{itemId}/claims`)
+- **Eligibility Gate:** The "Claim This Item" action is only displayed on verified `AVAILABLE` found items when the viewing user is not the finder.
+- **Claim Modal with Mandatory Evidence:**
+  - Index Number: Required student registration identifier.
+  - Ownership Description: Detailed description of ownership and identifying features (min 10 characters).
+  - Student ID Card File: Required image or PDF (JPEG, PNG, WebP, PDF <= 5 MB).
+  - Ownership Proof File: Required document (purchase invoice, receipt, previous photo with serial/model, box photo <= 5 MB).
+  - Additional Proof File: Optional supplementary evidence document (<= 5 MB).
+- **Multipart Form Upload:** Dispatched via `multipart/form-data` with automatic MIME-type and size validation.
+- **Duplicate Claim Protection:** Form safely captures `409 Conflict` if an active claim already exists for the item and alerts the user without crashing.
+
+### 3. Claim Status Tracking & Resubmission (`GET /api/v1/claims/me`)
+- **Claim Overview (`/claims`):** Filter claims by status tabs (`ALL`, `PENDING`, `APPROVED`, `REJECTED`, `CANCELLED`, `COMPLETED`).
+- **Contextual Status Guidance:**
+  - `PENDING`: Explains that the claim is under review by the Central Security Office. Allows claimant withdrawal via `POST /api/v1/claims/{id}/cancel`.
+  - `APPROVED`: Displays congratulations notice and actionable physical collection instructions (report to Central Security Office with physical Student ID card). Shows reviewing officer notes.
+  - `REJECTED`: Displays reviewing officer's rejection reason and provides a direct "Resubmit Claim" workflow to reapply with corrected evidence.
+  - `COMPLETED`: Confirms that the physical item has been collected and handed over.
+  - `CANCELLED`: Confirms that the claim was withdrawn by the claimant.
+- **Standalone Claim Detail View (`/claims/:id`):** Displays comprehensive claim status, timestamps, item metadata, review notes, and evidence list.
+- **Authenticated Evidence Download:** Securely streams private evidence binaries via `GET /api/v1/claims/{claimId}/evidence/{evidenceId}` using blob response mapping; evidence is never exposed via public URLs or unauthorized access.
+
 
 
