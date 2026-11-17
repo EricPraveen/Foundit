@@ -116,9 +116,12 @@ describe('Application Layouts', () => {
       expect(screen.getByText('Security Officer')).toBeInTheDocument();
       expect(screen.getByText('Security Office')).toBeInTheDocument();
       expect(screen.getByText('Officer Dashboard')).toBeInTheDocument();
-      expect(screen.getByText('Item Inventory')).toBeInTheDocument();
-      expect(screen.getByText('Claim Reviews')).toBeInTheDocument();
-      expect(screen.getByText('Handover Verification')).toBeInTheDocument();
+      expect(screen.getByText('Pending Handovers')).toBeInTheDocument();
+      expect(screen.getByText('Found Items')).toBeInTheDocument();
+      expect(screen.getByText('Lost Reports')).toBeInTheDocument();
+      expect(screen.getByText('Claims Review')).toBeInTheDocument();
+      expect(screen.getByText('Pending Collections')).toBeInTheDocument();
+      expect(screen.getByText('Returned Items')).toBeInTheDocument();
     });
 
     it('renders admin navigation links for Super Admin user', () => {

@@ -13,6 +13,8 @@ import {
   ScrollText,
   Award,
   Layers,
+  PackageCheck,
+  Archive,
   X,
 } from 'lucide-react';
 import { useAuth } from '@/features/auth';
@@ -44,9 +46,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const officerItems: NavItem[] = [
     { label: 'Officer Dashboard', to: ROUTES.OFFICER.DASHBOARD, icon: <Shield className="h-4 w-4" /> },
-    { label: 'Item Inventory', to: ROUTES.OFFICER.FOUND_ITEMS, icon: <Layers className="h-4 w-4" /> },
-    { label: 'Claim Reviews', to: ROUTES.OFFICER.CLAIMS, icon: <ClipboardCheck className="h-4 w-4" /> },
-    { label: 'Handover Verification', to: ROUTES.OFFICER.HANDOVERS, icon: <ShieldAlert className="h-4 w-4" /> },
+    { label: 'Pending Handovers', to: ROUTES.OFFICER.HANDOVERS, icon: <ShieldAlert className="h-4 w-4" /> },
+    { label: 'Found Items', to: ROUTES.OFFICER.FOUND_ITEMS, icon: <Layers className="h-4 w-4" /> },
+    { label: 'Lost Reports', to: ROUTES.OFFICER.LOST_REPORTS, icon: <FileQuestion className="h-4 w-4" /> },
+    { label: 'Claims Review', to: ROUTES.OFFICER.CLAIMS, icon: <ClipboardCheck className="h-4 w-4" /> },
+    { label: 'Pending Collections', to: ROUTES.OFFICER.COLLECTIONS, icon: <PackageCheck className="h-4 w-4" /> },
+    { label: 'Returned Items', to: ROUTES.OFFICER.RETURNED_ITEMS, icon: <Archive className="h-4 w-4" /> },
   ];
 
   const adminItems: NavItem[] = [
@@ -120,7 +125,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
           {renderNavGroup('Student Portal', studentItems)}
 
-          {(role === 'SECURITY_OFFICER' || role === 'SUPER_ADMIN') &&
+          {role === 'SECURITY_OFFICER' &&
             renderNavGroup('Security Office', officerItems)}
 
           {role === 'SUPER_ADMIN' && renderNavGroup('System Admin', adminItems)}

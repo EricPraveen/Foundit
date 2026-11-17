@@ -30,9 +30,16 @@ const ProfilePage = lazy(() => import('@/pages/app/ProfilePage'));
 
 // Officer Pages
 const OfficerDashboardPage = lazy(() => import('@/pages/officer/OfficerDashboardPage'));
-const OfficerFoundItemsPage = lazy(() => import('@/pages/officer/OfficerFoundItemsPage'));
-const OfficerClaimsPage = lazy(() => import('@/pages/officer/OfficerClaimsPage'));
 const OfficerHandoversPage = lazy(() => import('@/pages/officer/OfficerHandoversPage'));
+const OfficerHandoverDetailPage = lazy(() => import('@/pages/officer/OfficerHandoverDetailPage'));
+const OfficerFoundItemsPage = lazy(() => import('@/pages/officer/OfficerFoundItemsPage'));
+const OfficerLostReportsPage = lazy(() => import('@/pages/officer/OfficerLostReportsPage'));
+const OfficerLostReportDetailPage = lazy(() => import('@/pages/officer/OfficerLostReportDetailPage'));
+const OfficerClaimsPage = lazy(() => import('@/pages/officer/OfficerClaimsPage'));
+const OfficerClaimDetailPage = lazy(() => import('@/pages/officer/OfficerClaimDetailPage'));
+const OfficerCollectionsPage = lazy(() => import('@/pages/officer/OfficerCollectionsPage'));
+const OfficerCollectionDetailPage = lazy(() => import('@/pages/officer/OfficerCollectionDetailPage'));
+const OfficerReturnedItemsPage = lazy(() => import('@/pages/officer/OfficerReturnedItemsPage'));
 
 // Admin Pages
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
@@ -145,7 +152,7 @@ export const router = createBrowserRouter([
   {
     path: ROUTES.OFFICER.ROOT,
     element: (
-      <RoleRoute allowedRoles={['SECURITY_OFFICER', 'SUPER_ADMIN']}>
+      <RoleRoute allowedRoles={['SECURITY_OFFICER']}>
         <AuthenticatedLayout />
       </RoleRoute>
     ),
@@ -159,16 +166,44 @@ export const router = createBrowserRouter([
         element: withSuspense(OfficerDashboardPage),
       },
       {
+        path: 'handovers',
+        element: withSuspense(OfficerHandoversPage),
+      },
+      {
+        path: 'handovers/:itemId',
+        element: withSuspense(OfficerHandoverDetailPage),
+      },
+      {
         path: 'found-items',
         element: withSuspense(OfficerFoundItemsPage),
+      },
+      {
+        path: 'lost-reports',
+        element: withSuspense(OfficerLostReportsPage),
+      },
+      {
+        path: 'lost-reports/:reportId',
+        element: withSuspense(OfficerLostReportDetailPage),
       },
       {
         path: 'claims',
         element: withSuspense(OfficerClaimsPage),
       },
       {
-        path: 'handovers',
-        element: withSuspense(OfficerHandoversPage),
+        path: 'claims/:claimId',
+        element: withSuspense(OfficerClaimDetailPage),
+      },
+      {
+        path: 'collections',
+        element: withSuspense(OfficerCollectionsPage),
+      },
+      {
+        path: 'collections/:claimId',
+        element: withSuspense(OfficerCollectionDetailPage),
+      },
+      {
+        path: 'returned-items',
+        element: withSuspense(OfficerReturnedItemsPage),
       },
     ],
   },
