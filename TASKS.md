@@ -63,7 +63,7 @@ Check an item only when implemented and supported by evidence. Record evidence a
 - [x] React application foundation, routing, centralized API client, and UI system (FRONTEND-01)
 - [x] Authentication and role-specific layouts (FRONTEND-02)
 - [x] Student dashboard, student profile, categories, and campus locations views (FRONTEND-03)
-- [ ] Found item reporting and public browsing (FRONTEND-04)
+- [x] Found item reporting and public browsing (FRONTEND-04)
 - [ ] Claims and notifications (FRONTEND-05)
 - [ ] Security Officer dashboards and review flows (FRONTEND-06)
 - [ ] Super Admin management screens (FRONTEND-07)

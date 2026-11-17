@@ -1,6 +1,6 @@
 # Project status
 
-**Current phase:** Phase 3 — Frontend Implementation (FRONTEND-03 Student Dashboard & Profile Complete)
+**Current phase:** Phase 3 — Frontend Implementation (FRONTEND-04 Found Item Reporting & Public Browsing Complete)
 
 **Overall:** Security Officer Operational APIs (Dashboard `GET /api/v1/officer/dashboard`, inventory listing `GET /api/v1/officer/found-items`, collection history inspection), Super Admin APIs (User management, status and role updates with last-admin and unverified-email protection, reputation rules administration, and system configuration), centralized append-only audit trail (`audit_logs` table, `V9` Flyway migration, `AuditService` with `REQUIRES_NEW` and sensitive data sanitization), and comprehensive backend verification gate suite across end-to-end Journeys A through G fully implemented and verified with automated tests (155 total tests passing, 0 failures, 0 errors).
 
@@ -79,9 +79,10 @@
 - [x] FRONTEND-01 (`frontend/frontend-01-foundation`): React 18, TypeScript Strict, Vite, Tailwind CSS, React Router v6, Axios centralized API client, Auth integration abstraction, UI Design System primitives, Responsive Layouts (Public & Authenticated with role-based navigation), and complete Vitest test suite (40 tests passing, 0 failures)
 - [x] FRONTEND-02 (`frontend/frontend-02-authentication`): Student registration with exact `@uom.lk` domain validation, single-use email verification and token resend workflows, login with JWT authentication and session rehydration, role-based redirects (`STUDENT`, `SECURITY_OFFICER`, `SUPER_ADMIN`), institutional password recovery notice, PublicOnlyRoute guest guards, and 77 automated tests (15 test suites)
 - [x] FRONTEND-03 (`frontend/frontend-03-student-dashboard`): Student dashboard with authentic Spring Data Page summary counts (`/found-items/me`, `/lost-reports`, `/claims/me`, `/users/me/reputation`), recent activity inspection, student profile viewing and editing (`/users/me`) with strict Index Number privacy isolation, reputation balance and transaction ledger, active categories and campus locations reference directory, and 101 automated tests (19 test suites)
+- [x] FRONTEND-04 (`frontend/frontend-04-found-items`): Student found item reporting (`POST /api/v1/found-items`), image upload & delete (`multipart/form-data`, <=5MB, <=5 images), Central Security Office designated custody binding, explicit educational handover guidance distinguishing `PENDING_HANDOVER` (unconfirmed, hidden from browse) and `AVAILABLE` (officer confirmed, catalog listed), finder report management (`GET /api/v1/found-items/me`, `PUT /api/v1/found-items/{id}`, `POST /api/v1/found-items/{id}/cancel`), and public available items browser (`GET /api/v1/found-items`) with keyword, category, location, and date range filters, and 117 automated tests (23 test suites)
 
 ## In progress
-- None (Phase 3 FRONTEND-03 Student Dashboard & Profile complete; ready for FRONTEND-04 Found Item Reporting & Public Browsing)
+- None (Phase 3 FRONTEND-04 Found Item Reporting & Public Browsing complete; ready for FRONTEND-05 Claims & Notifications)
 
 ## Evidence log
 | Date | Change/evidence | Notes |
@@ -101,5 +102,6 @@
 | 2026-11-16 | FRONTEND-01 (`frontend/frontend-01-foundation`): React 18, TypeScript strict, Vite 6, Tailwind CSS, React Router v6, Axios centralized API client, Auth abstraction, UI Design System primitives, Layouts, Vitest test suite | Verified via `npm run lint`, `npm run typecheck`, `npm test` (40 tests passing across 9 test suites), and `npm run build` (build success in 725ms) |
 | 2026-11-16 | FRONTEND-02 (`frontend/frontend-02-authentication`): Student registration (@uom.lk validation), email verification & token resend, JWT login & session rehydration, role redirection, institutional password recovery notice, route guards | Verified via `npm run lint` (0 warnings/errors), `npm run typecheck` (clean), `npm test` (77 tests passing across 15 test suites), and `npm run build` (build success in 866ms) |
 | 2026-11-16 | FRONTEND-03 (`frontend/frontend-03-student-dashboard`): Student dashboard (authentic counts & recent activity), profile viewing & editing (Index Number privacy isolation), reputation balance & ledger, active categories & locations directory | Verified via `npm run lint` (0 warnings/errors), `npm run typecheck` (clean), `npm test` (101 tests passing across 19 test suites), and `npm run build` (build success in 800ms) |
+| 2026-11-17 | FRONTEND-04 (`frontend/frontend-04-found-items`): Student found item reporting, image attachments, handover guidance, Central Security Office binding, owner report updates & cancellation, available items catalog browser with filters & pagination, item details modal & page | Verified via `npm run lint` (0 warnings/errors), `npm run typecheck` (clean), `npm test` (117 tests passing across 23 test suites), and `npm run build` (build success in 862ms) |
 
 Update this file with concrete commands/results or review evidence whenever a task is marked complete.
