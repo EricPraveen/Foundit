@@ -135,7 +135,8 @@ All routes are declared in `src/routes/paths.ts`:
   - `/unauthorized`: 403 Forbidden access denial page
 - **Protected Student Application Routes (`ProtectedRoute`):**
   - `/dashboard`: Student dashboard overview
-  - `/found-items`: Found items catalog
+  - `/found-items`: Found items catalog & reporting registry
+  - `/found-items/:id`: Found item detail view
   - `/lost-reports`: Private lost reports
   - `/claims`: Ownership claim history
   - `/notifications`: In-app notifications
@@ -223,5 +224,60 @@ The student overview and identity interfaces are fully integrated with real Spri
 ### 3. Categories & Campus Locations Reference Data
 - **Active Categories (`/categories`):** Loaded via `GET /api/v1/categories`. Displays verified lost and found item classifications in alphabetical order with search filtering and error retry.
 - **Campus Locations (`/locations`):** Loaded via `GET /api/v1/locations`. Displays official campus facilities and custody zones (Academic Complex, Administration, Recreation) with zone filter buttons and search filtering.
-- **Reusable Data Hooks:** Exported `useCategories()` and `useLocations()` provide cached in-memory reference data for future reporting and claim submission forms (#102–#104).
+- **Reusable Data Hooks:** Exported `useCategories()` and `useLocations()` provide cached in-memory reference data for reporting and claim submission forms.
+
+---
+
+## Found Item Reporting & Public Browser (FRONTEND-04)
+
+The found item reporting, custody verification, and catalog discovery workflows are fully implemented according to Spring Boot backend contracts:
+
+### 1. Found Item Reporting (`POST /api/v1/found-items`)
+- **Reporting Modal:** Interactive form with client validations:
+  - Title: 3–200 characters, required.
+  - Category: Selection from active categories via `useCategories()`.
+  - Location: Selection from active campus locations via `useLocations()`.
+  - Specific Location: Optional floor/room/bench details (max 255 chars).
+  - Found Timestamp: `<input type="datetime-local">`, validated past or present (future timestamps rejected).
+  - Description: 5–2000 characters, required.
+  - Designated Security Office: Automatically fetched via `useSecurityOffice()` from `GET /api/v1/security-office` (Moratuwa MVP Central Security Office).
+- **Image Upload Integration:** Multi-file drag-and-drop selector:
+  - Supports JPEG, PNG, and WebP formats.
+  - Enforces maximum file size limit of 5 MB per image.
+  - Enforces maximum item attachment limit of 5 images.
+  - Client-side thumbnail previews with remove button prior to upload.
+  - Sequential upload via `POST /api/v1/found-items/{id}/images` upon successful report creation.
+- **Double Submission Prevention:** Disables submit buttons and provides loading indicators during submission and image uploading.
+- **Success & Handover Instructions Screen:** Displays immediate next steps with reference title/ID, designated Central Security Office desk location, operating hours, and custody verification guidelines.
+
+### 2. Handover Guidance & Security Invariants
+- **Privacy Invariant:** Found reports start in `PENDING_HANDOVER` (handover status `PENDING`, availability `UNAVAILABLE`). Unconfirmed reports are strictly private to the finder and **excluded from the public catalog**.
+- **Physical Custody Verification:** The finder must bring the physical item to the designated Central Security Office desk.
+- **Officer-Only Verification:** Only an authorized Security Officer can verify physical receipt (`POST /api/v1/officer/found-items/{id}/confirm-handover`). Upon officer verification:
+  - Handover status transitions to `CONFIRMED`.
+  - Availability status transitions to `AVAILABLE`.
+  - Reputation points are awarded to the finder.
+  - Item becomes discoverable in the university-wide catalog.
+- **No Self-Verification:** Students cannot self-verify handovers or publish items without physical inspection by officers.
+
+### 3. Finder Report Management (`GET /api/v1/found-items/me`)
+- **Status Filtering:** Tab-based views for `All`, `Pending Handover`, `Verified & Handed Over`, and `Cancelled`.
+- **Pending Updates (`PUT /api/v1/found-items/{id}`):** Finder can edit title, description, category, location, and specific location while the report remains in `PENDING` status.
+- **Pending Cancellation (`POST /api/v1/found-items/{id}/cancel`):** Finder can cancel a pending report with confirmation before physical handover. Cancelled items are locked against further editing.
+- **Image Attachments:** Finder can add photos (up to 5 total) or delete individual photos (`DELETE /api/v1/found-items/{id}/images/{imageId}`) while in `PENDING` status.
+- **Officer Notes:** Displays officer verification notes on confirmed items.
+
+### 4. Available Items Catalog Browser (`GET /api/v1/found-items`)
+- **Public & Authenticated Discovery:** Displays verified `AVAILABLE` items held at the Central Security Office.
+- **Server-Side Filters:**
+  - Search keyword matching on title and description (`query`).
+  - Category dropdown filter (`categoryId`).
+  - Campus Location dropdown filter (`locationId`).
+  - Date range filters (`fromDate`, `toDate`).
+  - Sort order (`foundAt,desc`, `foundAt,asc`, `createdAt,desc`, `title,asc`).
+  - Reset filters action.
+- **Spring Data Pagination:** Responsive page navigation (Page X of Y, Previous / Next controls, total items indicator).
+- **Finder Privacy Masking:** Public catalog cards and summary responses completely omit finder personal identifiers. Non-owner item detail views mask finder names.
+- **Item Details View (`/found-items/:id` and Modal):** Comprehensive item view with photo gallery, location, timestamp, custody office details, and claimant instructions.
+
 

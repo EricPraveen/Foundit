@@ -14,6 +14,7 @@ export const ROUTES = {
   APP: {
     DASHBOARD: '/dashboard',
     FOUND_ITEMS: '/found-items',
+    FOUND_ITEM_DETAIL: '/found-items/:id',
     LOST_REPORTS: '/lost-reports',
     CLAIMS: '/claims',
     NOTIFICATIONS: '/notifications',

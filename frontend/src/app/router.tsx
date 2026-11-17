@@ -20,6 +20,7 @@ const NotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'));
 // Student App Pages
 const DashboardPage = lazy(() => import('@/pages/app/DashboardPage'));
 const FoundItemsPage = lazy(() => import('@/pages/app/FoundItemsPage'));
+const FoundItemDetailPage = lazy(() => import('@/pages/app/FoundItemDetailPage'));
 const LostReportsPage = lazy(() => import('@/pages/app/LostReportsPage'));
 const ClaimsPage = lazy(() => import('@/pages/app/ClaimsPage'));
 const NotificationsPage = lazy(() => import('@/pages/app/NotificationsPage'));
@@ -106,6 +107,10 @@ export const router = createBrowserRouter([
       {
         path: ROUTES.APP.FOUND_ITEMS,
         element: withSuspense(FoundItemsPage),
+      },
+      {
+        path: ROUTES.APP.FOUND_ITEM_DETAIL,
+        element: withSuspense(FoundItemDetailPage),
       },
       {
         path: ROUTES.APP.LOST_REPORTS,
