@@ -9,6 +9,7 @@ import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { Card, CardContent } from '@/components/ui/Card';
 import { useFoundItemDetails } from '@/features/found-items/hooks/useFoundItemDetails';
 import { resolveImageUrl } from '@/features/found-items/services/foundItemService';
+import { SubmitClaimModal } from '@/features/claims';
 import { ROUTES } from '@/routes/paths';
 
 export const FoundItemDetailPage: React.FC = () => {
@@ -16,6 +17,7 @@ export const FoundItemDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { item, isLoading, error, isOwner } = useFoundItemDetails(id);
   const [selectedImageIndex, setSelectedImageIndex] = React.useState<number>(0);
+  const [isClaimModalOpen, setIsClaimModalOpen] = React.useState<boolean>(false);
 
   if (isLoading) {
     return (
@@ -174,14 +176,40 @@ export const FoundItemDetailPage: React.FC = () => {
               <div className="rounded-lg border border-campus-200 bg-campus-50/70 p-4 text-xs text-slate-700">
                 <h4 className="font-bold text-campus-950 mb-1">Claiming this property</h4>
                 <p className="text-slate-600 leading-relaxed">
-                  To claim this item, please visit the {item.designatedSecurityOfficeName} with your Student ID card.
-                  Officers will verify your ownership before releasing the property.
+                  To claim this item, please submit an online ownership claim with your Student ID card and proof
+                  of ownership, or visit the {item.designatedSecurityOfficeName}. Officers will verify your ownership
+                  before releasing the property.
                 </p>
+                {item.availabilityStatus === 'AVAILABLE' && (
+                  <div className="mt-3">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => setIsClaimModalOpen(true)}
+                    >
+                      Claim This Item
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {item && (
+        <SubmitClaimModal
+          itemId={item.id}
+          itemTitle={item.title}
+          securityOfficeName={item.designatedSecurityOfficeName}
+          isOpen={isClaimModalOpen}
+          onClose={() => setIsClaimModalOpen(false)}
+          onSuccess={() => {
+            setIsClaimModalOpen(false);
+            navigate(ROUTES.APP.CLAIMS);
+          }}
+        />
+      )}
     </PageContainer>
   );
 };

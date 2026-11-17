@@ -15,13 +15,14 @@ import { LoadingIndicator } from '@/components/ui/LoadingIndicator';
 import { Alert } from '@/components/ui/Alert';
 import { useFoundItemDetails } from '../hooks/useFoundItemDetails';
 import { resolveImageUrl } from '../services/foundItemService';
-import type { ItemAvailabilityStatus } from '../types';
+import type { FoundItemResponse, ItemAvailabilityStatus } from '../types';
 
 export interface FoundItemDetailModalProps {
   itemId: string | null;
   isOpen: boolean;
   onClose: () => void;
   onEditItem?: () => void;
+  onClaimItem?: (item: FoundItemResponse) => void;
 }
 
 export const FoundItemDetailModal: React.FC<FoundItemDetailModalProps> = ({
@@ -29,6 +30,7 @@ export const FoundItemDetailModal: React.FC<FoundItemDetailModalProps> = ({
   isOpen,
   onClose,
   onEditItem,
+  onClaimItem,
 }) => {
   const { item, isLoading, error, isOwner } = useFoundItemDetails(itemId || undefined);
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
@@ -202,14 +204,27 @@ export const FoundItemDetailModal: React.FC<FoundItemDetailModalProps> = ({
             <div className="rounded-lg border border-campus-200 bg-campus-50/70 p-4">
               <div className="flex items-start gap-2.5">
                 <Info className="h-4 w-4 text-campus-800 shrink-0 mt-0.5" />
-                <div className="text-xs text-slate-700">
+                <div className="text-xs text-slate-700 flex-1">
                   <p className="font-semibold text-campus-950">How to Claim This Item</p>
                   <p className="mt-1 text-slate-600 leading-relaxed">
-                    To claim this item, please visit the{' '}
-                    <strong>{item.designatedSecurityOfficeName}</strong> or submit an online claim with
-                    your Student ID card and proof of ownership. The duty officer will verify your identity
-                    before releasing the item.
+                    To claim this item, please submit an online claim with your Student ID card and proof of
+                    ownership, or visit the <strong>{item.designatedSecurityOfficeName}</strong>. The duty officer
+                    will verify your identity before releasing the item.
                   </p>
+                  {onClaimItem && (
+                    <div className="mt-3">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => {
+                          onClose();
+                          onClaimItem(item);
+                        }}
+                      >
+                        Claim This Item
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

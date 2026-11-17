@@ -22,7 +22,9 @@ const DashboardPage = lazy(() => import('@/pages/app/DashboardPage'));
 const FoundItemsPage = lazy(() => import('@/pages/app/FoundItemsPage'));
 const FoundItemDetailPage = lazy(() => import('@/pages/app/FoundItemDetailPage'));
 const LostReportsPage = lazy(() => import('@/pages/app/LostReportsPage'));
+const LostReportDetailPage = lazy(() => import('@/pages/app/LostReportDetailPage'));
 const ClaimsPage = lazy(() => import('@/pages/app/ClaimsPage'));
+const ClaimDetailPage = lazy(() => import('@/pages/app/ClaimDetailPage'));
 const NotificationsPage = lazy(() => import('@/pages/app/NotificationsPage'));
 const ProfilePage = lazy(() => import('@/pages/app/ProfilePage'));
 
@@ -117,8 +119,16 @@ export const router = createBrowserRouter([
         element: withSuspense(LostReportsPage),
       },
       {
+        path: ROUTES.APP.LOST_REPORT_DETAIL,
+        element: withSuspense(LostReportDetailPage),
+      },
+      {
         path: ROUTES.APP.CLAIMS,
         element: withSuspense(ClaimsPage),
+      },
+      {
+        path: ROUTES.APP.CLAIM_DETAIL,
+        element: withSuspense(ClaimDetailPage),
       },
       {
         path: ROUTES.APP.NOTIFICATIONS,
