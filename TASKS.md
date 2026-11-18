@@ -66,7 +66,7 @@ Check an item only when implemented and supported by evidence. Record evidence a
 - [x] Found item reporting and public browsing (FRONTEND-04)
 - [x] Private lost reports, claims submission, and claim tracking (FRONTEND-05)
 - [x] Security Officer dashboards and review flows (FRONTEND-06)
-- [ ] Super Admin management screens (FRONTEND-07)
+- [x] Super Admin management screens (FRONTEND-07)
 - [ ] Responsive and accessible UI Polish & Verification (FRONTEND-08)
 - [ ] PWA/push support if confirmed in scope
 

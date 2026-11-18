@@ -4,6 +4,7 @@
  */
 
 export type UserRole = 'STUDENT' | 'SECURITY_OFFICER' | 'SUPER_ADMIN';
+export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
 
 export interface User {
   id: string;
