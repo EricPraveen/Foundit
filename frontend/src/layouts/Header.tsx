@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, Bell, LogOut, Search } from 'lucide-react';
+import { Menu, LogOut, Search } from 'lucide-react';
 import { useAuth } from '@/features/auth';
+import { NotificationDropdown } from '@/features/notifications';
 import { ROUTES } from '@/routes/paths';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -72,13 +73,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
         )}
 
         {/* Notifications */}
-        <Link
-          to={ROUTES.APP.NOTIFICATIONS}
-          className="relative rounded-md p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-campus-600"
-          aria-label="View notifications"
-        >
-          <Bell className="h-5 w-5" />
-        </Link>
+        <NotificationDropdown />
 
         {/* User Info & Logout */}
         <div className="flex items-center gap-2 border-l border-slate-200 pl-3">
