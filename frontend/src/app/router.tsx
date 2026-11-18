@@ -44,9 +44,14 @@ const OfficerReturnedItemsPage = lazy(() => import('@/pages/officer/OfficerRetur
 // Admin Pages
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'));
 const AdminUsersPage = lazy(() => import('@/pages/admin/AdminUsersPage'));
+const AdminUserDetailPage = lazy(() => import('@/pages/admin/AdminUserDetailPage'));
+const AdminOfficersPage = lazy(() => import('@/pages/admin/AdminOfficersPage'));
+const AdminCategoriesPage = lazy(() => import('@/pages/admin/AdminCategoriesPage'));
+const AdminLocationsPage = lazy(() => import('@/pages/admin/AdminLocationsPage'));
 const AdminReputationRulesPage = lazy(() => import('@/pages/admin/AdminReputationRulesPage'));
-const AdminAuditLogsPage = lazy(() => import('@/pages/admin/AdminAuditLogsPage'));
 const AdminSystemConfigPage = lazy(() => import('@/pages/admin/AdminSystemConfigPage'));
+const AdminAuditLogsPage = lazy(() => import('@/pages/admin/AdminAuditLogsPage'));
+const AdminAuditLogDetailPage = lazy(() => import('@/pages/admin/AdminAuditLogDetailPage'));
 
 const pageFallback = (
   <div className="flex h-96 w-full items-center justify-center">
@@ -230,16 +235,40 @@ export const router = createBrowserRouter([
         element: withSuspense(AdminUsersPage),
       },
       {
+        path: 'users/:userId',
+        element: withSuspense(AdminUserDetailPage),
+      },
+      {
+        path: 'officers',
+        element: withSuspense(AdminOfficersPage),
+      },
+      {
+        path: 'categories',
+        element: withSuspense(AdminCategoriesPage),
+      },
+      {
+        path: 'locations',
+        element: withSuspense(AdminLocationsPage),
+      },
+      {
         path: 'reputation-rules',
         element: withSuspense(AdminReputationRulesPage),
+      },
+      {
+        path: 'unclaimed-policy',
+        element: withSuspense(AdminSystemConfigPage),
+      },
+      {
+        path: 'system-config',
+        element: withSuspense(AdminSystemConfigPage),
       },
       {
         path: 'audit-logs',
         element: withSuspense(AdminAuditLogsPage),
       },
       {
-        path: 'system-config',
-        element: withSuspense(AdminSystemConfigPage),
+        path: 'audit-logs/:auditId',
+        element: withSuspense(AdminAuditLogDetailPage),
       },
     ],
   },

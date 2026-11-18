@@ -13,6 +13,7 @@ import {
   ScrollText,
   Award,
   Layers,
+  MapPin,
   PackageCheck,
   Archive,
   X,
@@ -57,7 +58,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const adminItems: NavItem[] = [
     { label: 'Admin Dashboard', to: ROUTES.ADMIN.DASHBOARD, icon: <LayoutDashboard className="h-4 w-4" /> },
     { label: 'User Governance', to: ROUTES.ADMIN.USERS, icon: <Users className="h-4 w-4" /> },
+    { label: 'Security Officers', to: ROUTES.ADMIN.OFFICERS, icon: <Shield className="h-4 w-4" /> },
+    { label: 'Categories', to: ROUTES.ADMIN.CATEGORIES, icon: <Layers className="h-4 w-4" /> },
+    { label: 'Campus Locations', to: ROUTES.ADMIN.LOCATIONS, icon: <MapPin className="h-4 w-4" /> },
     { label: 'Reputation Rules', to: ROUTES.ADMIN.REPUTATION_RULES, icon: <Award className="h-4 w-4" /> },
+    { label: 'Unclaimed Item Policy', to: ROUTES.ADMIN.UNCLAIMED_POLICY, icon: <Settings className="h-4 w-4" /> },
     { label: 'System Audit Logs', to: ROUTES.ADMIN.AUDIT_LOGS, icon: <ScrollText className="h-4 w-4" /> },
     { label: 'System Configuration', to: ROUTES.ADMIN.SYSTEM_CONFIG, icon: <Settings className="h-4 w-4" /> },
   ];
