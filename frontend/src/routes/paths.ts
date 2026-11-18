@@ -25,9 +25,16 @@ export const ROUTES = {
   OFFICER: {
     ROOT: '/officer',
     DASHBOARD: '/officer/dashboard',
-    FOUND_ITEMS: '/officer/found-items',
-    CLAIMS: '/officer/claims',
     HANDOVERS: '/officer/handovers',
+    HANDOVER_DETAIL: '/officer/handovers/:itemId',
+    FOUND_ITEMS: '/officer/found-items',
+    LOST_REPORTS: '/officer/lost-reports',
+    LOST_REPORT_DETAIL: '/officer/lost-reports/:reportId',
+    CLAIMS: '/officer/claims',
+    CLAIM_DETAIL: '/officer/claims/:claimId',
+    COLLECTIONS: '/officer/collections',
+    COLLECTION_DETAIL: '/officer/collections/:claimId',
+    RETURNED_ITEMS: '/officer/returned-items',
   },
   ADMIN: {
     ROOT: '/admin',
