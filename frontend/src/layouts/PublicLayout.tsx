@@ -17,6 +17,14 @@ export const PublicLayout: React.FC = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
+      {/* Skip to main content link for keyboard accessibility */}
+      <a
+        href="#public-main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-campus-900 focus:px-4 focus:py-2 focus:text-white focus:shadow-md focus:outline-none focus:ring-2 focus:ring-campus-600"
+      >
+        Skip to main content
+      </a>
+
       {/* Top University Public Header */}
       <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -112,7 +120,7 @@ export const PublicLayout: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1">
+      <main id="public-main-content" tabIndex={-1} className="flex-1 focus:outline-none">
         <Outlet />
       </main>
 
